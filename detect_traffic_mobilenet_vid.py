@@ -1,7 +1,16 @@
-
-
-
+# detect_traffic_mobilenet_vid.py
+# Input a video, and use MobileNet to detect:
+#	person, car, bus, bicycle, motorcycle
+# The detections (lables and %s) are drawn on output frames
+# With bounding boxes around to detected object
+# Options to display the video on desktop and save the ouput video
+#
+# Run:
+# Just save the output video:
 # python3 detect_traffic_mobilenet_vid.py -i vid_inputs/vid3.mp4 -o vid_outputs/1.avi
+# Just watch the output video:
+# python3 detect_traffic_mobilenet_vid.py -i vid_inputs/vid3.mp4 -v tru
+
 
 import numpy as np
 import argparse
@@ -43,11 +52,11 @@ writer = None
 
 print("-Running detection")
 while True:
+	# Read the current frame
 	(check, frame) = vs.read()
 	if not check:
 		break
-
-	frame = imutils.resize(frame, width=500)
+	frame = imutils.resize(frame, width=720)
 	if w is None or h is None:
 		(h, w) = frame.shape[:2]
 
@@ -80,16 +89,17 @@ while True:
 		cv2.putText(frame, txt, (start_x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, colors[class_idx], 2)
 
 	# Save this frame to the output video
-	if writer is None:
-		fourcc = cv2.VideoWriter_fourcc(*"MJPG")
-		writer = cv2.VideoWriter(
-			args["output"],
-			fourcc, 30,
-			(frame.shape[1],
-			frame.shape[0]),
-			True
-		)
-	writer.write(frame)
+	if args["output"]:
+		if writer is None:
+			fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+			writer = cv2.VideoWriter(
+				args["output"],
+				fourcc, 30,
+				(frame.shape[1],
+				frame.shape[0]),
+				True
+			)
+		writer.write(frame)
 
 	# Display the video on desktop
 	if args["playvideo"]:
@@ -104,6 +114,7 @@ print("-Detection ended")
 
 vs.release()
 cv2.destroyAllWindows()
+
 
 
 ##
