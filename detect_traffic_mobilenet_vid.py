@@ -7,7 +7,7 @@
 #
 # Run:
 # Just save the output video:
-# python3 detect_traffic_mobilenet_vid.py -i vid_inputs/vid3.mp4 -o vid_outputs/1.avi
+# python3 detect_traffic_mobilenet_vid.py -i vid_inputs/vid3.mp4 -o vid_outputs/0.avi
 # Just watch the output video:
 # python3 detect_traffic_mobilenet_vid.py -i vid_inputs/vid3.mp4 -v tru
 
@@ -86,7 +86,7 @@ while True:
 		txt = " {}: {:.2f}%".format(label, prob)
 		cv2.rectangle(frame, (start_x, start_y), (end_x, end_y), colors[class_idx], 2)
 		y = start_y - 15 if start_y - 15 > 15 else start_y + 15
-		cv2.putText(frame, txt, (start_x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, colors[class_idx], 2)
+		cv2.putText(frame, txt, (start_x, y), 0, 0.5, colors[class_idx], 2)
 
 	# Save this frame to the output video
 	if args["output"]:
