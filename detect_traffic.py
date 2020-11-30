@@ -1,9 +1,19 @@
+# detect_traffic.py
+# November 2020
+# Input a video, and use MobileNet to detect:
+#	person, car, bus, bicycle, motorcycle
+# The detections (lables and %s) are drawn on output frames
+# With bounding boxes around the detected object
+# Options to display the video on desktop and/or save the ouput video
+#
+# Run:
+# Just save the output video:
+# python3 detect_traffic.py -i vid_inputs/vid3.mp4 -o vid_outputs/0.avi
+# Just watch the output video:
+# python3 detect_traffic.py -i vid_inputs/vid3.mp4 -v tru
 
 
-
-
-
-
+from videostream import Video_Thread
 from mobilenet import Mnet
 import numpy as np
 import argparse
@@ -24,14 +34,15 @@ def read_video(input_vid, output_vid, playvid):
 	net = mobile_net.net
 	colors = mobile_net.colors
 
-	vs = cv2.VideoCapture(input_vid)
+	vs = Video_Thread(input_vid).start()
 	writer = None
 	(w, h) = (None, None)
 
 	# Read each frame in the video
+	print("Reading video...")
 	while True:
-		(check, frame) = vs.read()
-		if not check:
+		frame = vs.read()
+		if frame is None:
 			break
 		frame = imutils.resize(frame, width=720)
 		if w is None or h is None:
@@ -47,7 +58,7 @@ def read_video(input_vid, output_vid, playvid):
 		net.setInput(blob)
 		detections = net.forward()
 
-		# Loop through all detections in this frame and draw on the frame
+		# Loop through all detections in this frame and draw them on the frame
 		for i in np.arange(0, detections.shape[2]):
 			confidence = detections[0, 0, i, 2]
 			class_idx = int(detections[0, 0, i, 1])
@@ -60,9 +71,9 @@ def read_video(input_vid, output_vid, playvid):
 			label = mobile_net.all_classes[class_idx]
 			prob = confidence * 100
 			txt = f"{label}: {prob:2f}%"
-			cv2.rectangle(frame, (start_x, start_y), (end_x, end_y), colors[class_idx], 2)
+			cv2.rectangle(frame, (start_x,start_y), (end_x,end_y), colors[class_idx], 2)
 			y = start_y - 15 if start_y - 15 > 15 else start_y + 15
-			cv2.putText(frame, txt, (start_x, y), 0, 0.5, colors[class_idx], 2)
+			cv2.putText(frame, txt, (start_x,y), 0, 0.5, colors[class_idx], 2)
 
 		# Save this frame to the output video
 		if output_vid:
@@ -88,7 +99,6 @@ def read_video(input_vid, output_vid, playvid):
 # End read_video()
 
 
-
 if __name__ == '__main__':
 	ap = argparse.ArgumentParser()
 	ap.add_argument("-i", "--input", required=True)
@@ -97,6 +107,9 @@ if __name__ == '__main__':
 	args = vars(ap.parse_args())
 
 	read_video(args["input"], args["output"], args["playvid"])
+
+
+print("Task failed successfully")
 
 
 
