@@ -7,7 +7,6 @@
 
 from threading import Thread
 from queue import Queue
-import sys
 import cv2
 import time
 
@@ -44,8 +43,7 @@ class Video_Thread:
 	def read(self):
 		return self.que.get()
 
-	def more_frames(self):
-		t = 0
+	def more_frames(self, t=0):
 		while self.que.qsize()==0 and not self.stopped and t<5:
 			time.sleep(0.1)
 			t += 1
@@ -54,6 +52,12 @@ class Video_Thread:
 	def stop(self):
 		self.quit = 1
 		self.thread.join()
+
+	def release(self):
+		self.stream.release()
+
+	def fps(self):
+		return self.stream.get(cv2.CAP_PROP_FPS)
 
 
 

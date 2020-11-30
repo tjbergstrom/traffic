@@ -35,6 +35,7 @@ def read_video(input_vid, output_vid, playvid):
 	colors = mobile_net.colors
 
 	vs = Video_Thread(input_vid).start()
+	fps = vs.fps()
 	writer = None
 	(w, h) = (None, None)
 
@@ -70,22 +71,16 @@ def read_video(input_vid, output_vid, playvid):
 			(start_x, start_y, end_x, end_y) = box.astype("int")
 			label = mobile_net.all_classes[class_idx]
 			prob = confidence * 100
-			txt = f"{label}: {prob:2f}%"
+			txt = f"{label}: {prob:.2f}%"
 			cv2.rectangle(frame, (start_x,start_y), (end_x,end_y), colors[class_idx], 2)
-			y = start_y - 15 if start_y - 15 > 15 else start_y + 15
+			y = start_y - 16 if start_y - 16 > 16 else start_y + 16
 			cv2.putText(frame, txt, (start_x,y), 0, 0.5, colors[class_idx], 2)
 
 		# Save this frame to the output video
 		if output_vid:
 			if writer is None:
 				fourcc = cv2.VideoWriter_fourcc(*"MJPG")
-				writer = cv2.VideoWriter(
-					output_vid,
-					fourcc, 30,
-					(frame.shape[1],
-					frame.shape[0]),
-					True
-				)
+				writer = cv2.VideoWriter(output_vid, fourcc, fps, (w, h), True)
 			writer.write(frame)
 
 		# Display the video on desktop
