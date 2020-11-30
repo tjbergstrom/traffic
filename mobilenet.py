@@ -1,4 +1,6 @@
-
+# mobilnet.py
+# November 2020
+# Some properties of MobileNet that are used to make detections
 
 
 import cv2
