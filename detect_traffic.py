@@ -11,6 +11,7 @@
 # python3 detect_traffic.py -i vid_inputs/vid3.mp4 -o vid_outputs/0.avi
 # Just watch the output video:
 # python3 detect_traffic.py -i vid_inputs/vid3.mp4 -v tru
+#  (hit 'q' to quit the video)
 
 
 from videostream import Video_Thread
@@ -20,6 +21,7 @@ import argparse
 import imutils
 import time
 import cv2
+import sys
 import os
 
 
@@ -44,7 +46,8 @@ def read_video(input_vid, output_vid, playvid):
 	while True:
 		frame = vs.read()
 		if frame is None:
-			break
+			if not vs.more_frames():
+				break
 		frame = imutils.resize(frame, width=720)
 		if w is None or h is None:
 			(h, w) = frame.shape[:2]
@@ -88,10 +91,13 @@ def read_video(input_vid, output_vid, playvid):
 			cv2.imshow("Video", frame)
 			key = cv2.waitKey(1) & 0xFF
 			if key == ord("q"):
+				vs.release()
+				vs.stop()
 				break
 
 	# End while true reading frames
 # End read_video()
+
 
 
 if __name__ == '__main__':
@@ -101,10 +107,26 @@ if __name__ == '__main__':
 	ap.add_argument("-v", "--playvid", type=bool, default=False)
 	args = vars(ap.parse_args())
 
+	if not os.path.isfile(args["input"]):
+		print("\'{}\' is not a filepath".format(args["input"]))
+		sys.exit(1)
+	if args["output"] and not os.path.isdir(os.path.dirname(args["output"])):
+		print("Cannot save an output video to \'{}\'".format(args["output"]))
+		sys.exit(1)
+	if args["output"] and os.path.isfile(args["output"]):
+		print("Warning: will be over-writing output video \'{}\'".format(args["output"]))
+		time.sleep(3.0)
+
 	read_video(args["input"], args["output"], args["playvid"])
 
-
-print("Task failed successfully")
+	print("Finished reading video")
+	if args["output"]:
+		if os.path.isfile(args["output"]):
+			print("Output video successfully saved")
+		else:
+			print("Output video not saved")
+			sys.exit(1)
+	print("Task failed successfully")
 
 
 

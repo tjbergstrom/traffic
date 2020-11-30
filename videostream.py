@@ -21,7 +21,7 @@ class Video_Thread:
 			args=(),
 			daemon=True
 		)
-		time.sleep(1.0)
+		time.sleep(0.5)
 
 	def start(self):
 		self.thread.start()
@@ -44,7 +44,7 @@ class Video_Thread:
 		return self.que.get()
 
 	def more_frames(self, t=0):
-		while self.que.qsize()==0 and not self.stopped and t<5:
+		while self.que.qsize()==0 and not self.quit and t<5:
 			time.sleep(0.1)
 			t += 1
 		return self.que.qsize() > 0
