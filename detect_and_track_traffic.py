@@ -2,13 +2,13 @@
 # December 2020
 
 
-import dlib
-import numpy as np
 from centroid_tracker import Centroid_Tracker
 from trackable_object import Trackable_Object
 from videostream import Video_Thread
 from mobilenet import Mnet
+import numpy as np
 import imutils
+import dlib
 import time
 import cv2
 import sys
@@ -41,6 +41,8 @@ class Traffic_Detection:
 				continue
 			class_idx = int(detections[0, 0, i, 1])
 			if class_idx not in self.mobile_net.traffic_idxs:
+				continue
+			if class_idx != 7 and confidence < 8:
 				continue
 			label = self.mobile_net.all_classes[class_idx]
 			box = detections[0, 0, i, 3:7] * np.array([self.w, self.h, self.w, self.h])
@@ -89,8 +91,10 @@ class Traffic_Detection:
 		return frame
 
 
-	def read_video(self, vid_path):
+	def read_video(self, vid_path, output, play):
 		vs = Video_Thread(vid_path).start()
+		fps = vs.fps()
+		writer = None
 		while True:
 			frame = vs.read()
 			if frame is None:
@@ -101,15 +105,25 @@ class Traffic_Detection:
 			rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 			frame = self.traffic_detections(frame, rgb)
 			self.frame_count += 1
-			cv2.imshow("Video", frame)
-			key = cv2.waitKey(1) & 0xFF
-			if key == ord("q"):
-				vs.release()
-				vs.stop()
-				break
+
+			if output:
+				if writer is None:
+					fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+					writer = cv2.VideoWriter(
+						output, fourcc, fps, (self.w, self.h), True)
+				writer.write(frame)
+
+			if play:
+				cv2.imshow("Video", frame)
+				key = cv2.waitKey(1) & 0xFF
+				if key == ord("q"):
+					vs.release()
+					vs.stop()
+					break
+
+		# End while true reading video frames
+	# End read_video()
 
 
 
-if __name__ == '__main__':
-	TD = Traffic_Detection()
-	TD.read_video("vid_inputs/vid8.mp4")
+##

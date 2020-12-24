@@ -17,7 +17,7 @@ class Mnet:
 			"dog", "horse", "motorbike", "person", "pottedplant", "sheep",
 			"sofa", "train", "tvmonitor"
 		]
-		self.traffic_idxs = [2, 6, 7, 14]
+		self.traffic_idxs = [2, 6, 7, 14, 15]
 		self.colors = [(0,0,0)] * len(self.all_classes)
 		self.colors[2] = (0,255,0) # bicycle
 		self.colors[15] = (0,0,255) # person
