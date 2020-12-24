@@ -51,9 +51,6 @@ class Traffic_Detection:
 			self.trackers.append((tracker, label))
 
 
-
-
-
 	def track(self, tracker, label, boxs, rgb):
 		tracker.update(rgb)
 		pos = tracker.get_position()
@@ -65,8 +62,6 @@ class Traffic_Detection:
 		return boxs
 
 
-
-
 	def traffic_detections(self, frame, rgb):
 		boxs = []
 		if self.frame_count % self.detect_freq == 0:
@@ -75,26 +70,23 @@ class Traffic_Detection:
 			for tracker, label in self.trackers:
 				boxs = self.track(tracker, label, boxs, rgb)
 		objects = self.ct.update(boxs)
-		for (objectID, (centroid, box, label)) in objects.items():
+		for (objectID, (c, box, label)) in objects.items():
 			to = self.trackable_objects.get(objectID, None)
 			if to is None:
-				to = Trackable_Object(objectID, centroid)
+				to = Trackable_Object(objectID, c)
 				to.label = label
-				try:
-					to.color = self.mobile_net.clrs[to.label]
-					print(objectID, (centroid, box, label))
-				except:
-					print(objectID, (centroid, box, label))
-					sys.exit(1)
+				to.color = self.mobile_net.clrs[to.label]
 			else:
-				to.centroids.append(centroid)
+				to.centroids.append(c)
 			self.trackable_objects[objectID] = to
 			(start_x, start_y, end_x, end_y) = box
-			cv2.rectangle(frame, (start_x,start_y), (end_x,end_y), to.color, 2)
-			cv2.putText(frame, str(objectID), (centroid[0], centroid[1]), 0, 2, to.color, 3)
+			cv2.rectangle(frame, (start_x,start_y), (end_x,end_y), to.color, 1)
+			overlay = frame.copy()
+			radius = min( (end_x - start_x)//2 , (end_y - start_y)//2 )
+			cv2.circle(overlay, (c[0], c[1]), (radius), to.color, -1)
+			frame = cv2.addWeighted(overlay, 0.3, frame, 0.7, 0, 0)
+			cv2.putText(frame, str(objectID), (c[0], c[1]), 0, 2, to.color, 3)
 		return frame
-
-
 
 
 	def read_video(self, vid_path):
