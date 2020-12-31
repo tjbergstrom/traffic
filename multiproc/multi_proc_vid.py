@@ -23,6 +23,7 @@ import cv2
 import time
 import subprocess as sp
 import multiprocessing as mp
+from yolo_proc import Yolo_Detection
 
 
 def recombine_frames(processes):
@@ -47,8 +48,9 @@ def read_video(proc_num):
     writer = cv2.VideoWriter(f"tmp_{proc_num}.mp4", fourcc, fps, (w,h), True)
     while proc_frames < jump_unit:
         check, frame = vs.read()
-        if not check or not frame:
+        if not check or frame is None:
             break
+        frame = YD.detect(frame)
         writer.write(frame)
         proc_frames += 1
     vs.release()
@@ -73,12 +75,13 @@ def meta_info(vid):
 
 if __name__ == "__main__":
     start = time.time()
-    in_vid = "../vid_inputs/vid8.mp4"
+    in_vid = "../vid_inputs/vid7.mp4"
     out_vid = "vid1_out.mp4"
     w, h, fps, frames = meta_info(in_vid)
     fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
     processes = mp.cpu_count()
     jump_unit = frames // processes
+    YD = Yolo_Detection(w, h)
     multi_process()
     print(f"{time.time() - start:5f} seconds")
 
