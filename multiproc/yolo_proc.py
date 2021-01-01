@@ -67,3 +67,7 @@ class Yolo_Detection:
 				label = self.all_classes[class_idxs[i]]
 				cv2.putText(frame, label, (x, y - 5), 0, 0.5, color, 2)
 		return frame
+
+
+
+##

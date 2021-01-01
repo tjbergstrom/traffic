@@ -41,7 +41,7 @@ def recombine_frames(processes):
 
 
 def read_video(proc_num):
-    print(f"Process: {proc_num}, frame {jump_unit*proc_num}/{frames}")
+    print(f"Process: {proc_num}, start frame {jump_unit*proc_num}/{frames}")
     vs = cv2.VideoCapture(in_vid)
     vs.set(cv2.CAP_PROP_POS_FRAMES, jump_unit * proc_num)
     proc_frames = 0
@@ -53,8 +53,11 @@ def read_video(proc_num):
         frame = YD.detect(frame)
         writer.write(frame)
         proc_frames += 1
+        if proc_frames % (jump_unit//2) == 0:
+            print(f"Process {proc_num} 50% complete")
     vs.release()
     writer.release()
+    print(f"Process {proc_num} complete")
 
 
 def multi_process():
@@ -75,8 +78,8 @@ def meta_info(vid):
 
 if __name__ == "__main__":
     start = time.time()
-    in_vid = "../vid_inputs/vid7.mp4"
-    out_vid = "vid1_out.mp4"
+    in_vid = "../vid_inputs/vid8.mp4"
+    out_vid = "vid2_out.mp4"
     w, h, fps, frames = meta_info(in_vid)
     fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
     processes = mp.cpu_count()
