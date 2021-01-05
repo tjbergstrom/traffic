@@ -33,6 +33,8 @@ if __name__ == '__main__':
 		sys.exit(f"Cannot save an output video to \'{out_vid}\'")
 	if out_vid and not os.path.basename(out_vid):
 		sys.exit(f"No output file specified \'{out_vid}\'")
+	if not out_vid and not args["playvid"]:
+		sys.exit(f"Not saving or displaying output?")
 	if out_vid and os.path.isfile(out_vid):
 		print(f"Warning: will be over-writing output video \'{out_vid}\'")
 		time.sleep(3.0)

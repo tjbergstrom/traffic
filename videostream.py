@@ -36,13 +36,13 @@ class Video_Thread:
 				break
 			if not self.que.full():
 				check, frame = self.stream.read()
-				if not check:
+				if not check or frame is None:
 					self.quit = 1
 					break
 				self.que.put(frame)
 			else:
 				time.sleep(0.1)
-		self.stream.release()
+		self.release()
 
 
 	def read(self):
@@ -77,13 +77,25 @@ class Video_Thread:
 		return writer
 
 
+	@staticmethod
 	def vid_dims(vid, width):
 		cap = cv2.VideoCapture(vid)
+		frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 		frame = cap.read()[1]
 		frame = imutils.resize(frame, width=width)
 		(h, w) = frame.shape[:2]
 		cap.release()
-		return w, h
+		return w, h, frames
+
+
+	@staticmethod
+	def status(frame_count, frames):
+		if frame_count == int(frames*0.25):
+			print(" 25% complete")
+		elif frame_count == int(frames*0.50):
+			print(" 50% complete")
+		elif frame_count == int(frames*0.75):
+			print(" 75% complete")
 
 
 
