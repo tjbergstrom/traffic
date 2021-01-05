@@ -16,7 +16,7 @@ import os
 
 
 class Traffic_Detection:
-	def __init__(self):
+	def __init__(self, width=720):
 		self.trackers = []
 		self.detect_freq = 3
 		self.frame_count = 0
@@ -24,6 +24,7 @@ class Traffic_Detection:
 		self.net = self.mobile_net.net
 		self.trackable_objects = {}
 		self.ct = Centroid_Tracker(8, 32)
+		self.resize_width = width
 		self.w = None
 		self.h = None
 
@@ -92,36 +93,28 @@ class Traffic_Detection:
 
 
 	def read_video(self, vid_path, output, play):
+		self.w, self.h = Video_Thread.vid_dims(vid_path, self.resize_width)
 		vs = Video_Thread(vid_path).start()
-		fps = vs.fps()
-		writer = None
+		if output:
+			writer = vs.vid_writer(output, self.w, self.h)
 		while True:
 			frame = vs.read()
 			if frame is None:
 				break
-			frame = imutils.resize(frame, width=720)
-			if self.w is None or self.h is None:
-				(self.h, self.w) = frame.shape[:2]
+			frame = imutils.resize(frame, width=self.resize_width)
 			rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 			frame = self.traffic_detections(frame, rgb)
 			self.frame_count += 1
-
 			if output:
-				if writer is None:
-					fourcc = cv2.VideoWriter_fourcc(*"MJPG")
-					writer = cv2.VideoWriter(
-						output, fourcc, fps, (self.w, self.h), True)
 				writer.write(frame)
-
 			if play:
 				cv2.imshow("Video", frame)
 				key = cv2.waitKey(1) & 0xFF
 				if key == ord("q"):
-					vs.release()
-					vs.stop()
 					break
-
 		# End while true reading video frames
+		vs.release()
+		vs.stop()
 	# End read_video()
 
 

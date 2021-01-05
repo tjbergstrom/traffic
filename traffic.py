@@ -21,30 +21,30 @@ if __name__ == '__main__':
 	ap.add_argument("-i", "--input", required=True)
 	ap.add_argument("-o", "--output", required=False)
 	ap.add_argument("-v", "--playvid", type=bool, default=False)
+	ap.add_argument("-w", "--width", type=int, default=720)
 	args = vars(ap.parse_args())
 
-	if not os.path.isfile(args["input"]):
-		print("\'{}\' is not a filepath".format(args["input"]))
-		sys.exit(1)
-	if args["output"] and not os.path.isdir(os.path.dirname(args["output"])):
-		print("Cannot save an output video to \'{}\'".format(args["output"]))
-		sys.exit(1)
-	if args["output"] and not os.path.basename(args["output"]):
-		print("No output file specified \'{}\'".format(args["output"]))
-		sys.exit(1)
-	if args["output"] and os.path.isfile(args["output"]):
-		print("Warning: will be over-writing output video \'{}\'".format(args["output"]))
+	in_vid = args["input"]
+	out_vid = args["output"]
+
+	if not os.path.isfile(in_vid):
+		sys.exit(f"\'{in_vid}\' is not a filepath")
+	if out_vid and not os.path.isdir(os.path.dirname(out_vid)):
+		sys.exit(f"Cannot save an output video to \'{out_vid}\'")
+	if out_vid and not os.path.basename(out_vid):
+		sys.exit(f"No output file specified \'{out_vid}\'")
+	if out_vid and os.path.isfile(out_vid):
+		print(f"Warning: will be over-writing output video \'{out_vid}\'")
 		time.sleep(3.0)
 
-	Traffic_Detection().read_video(args["input"], args["output"], args["playvid"])
+	Traffic_Detection(args["width"]).read_video(in_vid, out_vid, args["playvid"])
 
 	print("Finished reading video")
-	if args["output"]:
-		if os.path.isfile(args["output"]):
+	if out_vid:
+		if os.path.isfile(out_vid):
 			print("Output video successfully saved")
 		else:
-			print("Output video not saved")
-			sys.exit(1)
+			sys.exit("Output video not saved")
 	print("Task failed successfully")
 
 
