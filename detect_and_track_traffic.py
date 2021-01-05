@@ -78,7 +78,7 @@ class Traffic_Detection:
 			if to is None:
 				to = Trackable_Object(objectID, c)
 				to.label = label
-				to.color = self.mobile_net.clrs[to.label]
+				to.color = self.mobile_net.colors[to.label]
 			else:
 				to.centroids.append(c)
 			self.trackable_objects[objectID] = to
