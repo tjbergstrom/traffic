@@ -54,7 +54,7 @@ def read_video(proc_num, width=180):
         if proc_frames == (frames//2):
             print(f"Processing: {in_vid} 50% complete")
     vs.release()
-    #writer.release()
+    writer.release()
     print(f"Processing: {in_vid} 100% complete")
 
 
