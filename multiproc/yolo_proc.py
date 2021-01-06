@@ -34,8 +34,7 @@ class Yolo_Detection:
 			1 / 255.0,
 			(416, 416),
 			swapRB=True,
-			crop=False
-		)
+			crop=False)
 		self.net.setInput(blob)
 		output_layers = self.net.forward(self.ln)
 		boxes = []
@@ -62,10 +61,10 @@ class Yolo_Detection:
 			for i in idxs.flatten():
 				(x, y) = (boxes[i][0], boxes[i][1])
 				(w, h) = (boxes[i][2], boxes[i][3])
-				color = [int(c) for c in self.colors[class_idxs[i]]]
-				cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+				color = self.colors[class_idxs[i]]
+				cv2.rectangle(frame, (x, y), (x+w, y+h), color, 2)
 				label = self.all_classes[class_idxs[i]]
-				cv2.putText(frame, label, (x, y - 5), 0, 0.5, color, 2)
+				cv2.putText(frame, label, (x, y-5), 0, 0.5, color, 2)
 		return frame
 
 
