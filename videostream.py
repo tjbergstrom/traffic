@@ -13,7 +13,7 @@ import time
 
 
 class Video_Thread:
-	def __init__(self, src):
+	def __init__(self, src, frames):
 		self.stream = cv2.VideoCapture(src)
 		self.que = Queue(maxsize=256)
 		self.quit = 0
@@ -22,6 +22,11 @@ class Video_Thread:
 			args=(),
 			daemon=True
 		)
+		self.statuses = {
+			int(frames*0.25) : "25% complete",
+			int(frames*0.50) : "50% complete",
+			int(frames*0.75) : "75% complete",
+		}
 
 
 	def start(self):
@@ -81,21 +86,14 @@ class Video_Thread:
 	def vid_dims(vid, width):
 		cap = cv2.VideoCapture(vid)
 		frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-		frame = cap.read()[1]
-		frame = imutils.resize(frame, width=width)
-		(h, w) = frame.shape[:2]
+		(h, w) = imutils.resize(cap.read()[1], width=width).shape[:2]
 		cap.release()
 		return w, h, frames
 
 
-	@staticmethod
-	def status(frame_count, frames):
-		if frame_count == int(frames*0.25):
-			print(" 25% complete")
-		elif frame_count == int(frames*0.50):
-			print(" 50% complete")
-		elif frame_count == int(frames*0.75):
-			print(" 75% complete")
+	def status(self, frame_count):
+		if frame_count in self.statuses:
+			print(self.statuses.get(frame_count))
 
 
 

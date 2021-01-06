@@ -94,7 +94,7 @@ class Traffic_Detection:
 
 	def read_video(self, vid_path, output, play):
 		self.w, self.h, frames = Video_Thread.vid_dims(vid_path, self.resize_width)
-		vs = Video_Thread(vid_path).start()
+		vs = Video_Thread(vid_path, frames).start()
 		if output:
 			writer = vs.vid_writer(output, self.w, self.h)
 		while True:
@@ -107,13 +107,14 @@ class Traffic_Detection:
 			self.frame_count += 1
 			if output:
 				writer.write(frame)
-				Video_Thread.status(self.frame_count, frames)
+				vs.status(self.frame_count)
 			if play:
 				cv2.imshow("", frame)
 				key = cv2.waitKey(1) & 0xFF
 				if key == ord("q"):
 					break
 		# End while true reading video frames
+		writer.release()
 		vs.release()
 		vs.stop()
 	# End read_video()
