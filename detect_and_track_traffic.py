@@ -31,7 +31,7 @@ class Traffic_Detection:
 		self.h = 0
 
 
-	def detect(self, frame, rgb):
+	def detect(self, frame, rgb, v_only=True):
 		self.trackers = []
 		blob = cv2.dnn.blobFromImage(
 			cv2.resize(frame, (300, 300)),
@@ -45,7 +45,9 @@ class Traffic_Detection:
 			class_idx = int(detections[0, 0, i, 1])
 			if class_idx not in self.mobile_net.traffic_idxs:
 				continue
-			if class_idx != 7 and confidence < 8:
+			if v_only and class_idx not in self.mobile_net.vehicles_only:
+				continue
+			if class_idx not in self.mobile_net.vehicles_only and confidence < 0.6:
 				continue
 			label = self.mobile_net.all_classes[class_idx]
 			box = detections[0, 0, i, 3:7] * np.array([self.w, self.h, self.w, self.h])

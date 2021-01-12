@@ -39,9 +39,10 @@ if __name__ == '__main__':
 		print(f"Warning: will be over-writing output video \'{out_vid}\'")
 		time.sleep(3.0)
 
+	start = time.time()
 	Traffic_Detection(args["width"]).read_video(in_vid, out_vid, args["playvid"])
 
-	print("Finished reading video")
+	print(f"Finished processing video ({time.time()-start:.2f} seconds)")
 	if out_vid:
 		if os.path.isfile(out_vid):
 			print("Output video successfully saved")

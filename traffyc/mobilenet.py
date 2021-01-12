@@ -12,6 +12,7 @@ class Mnet:
 		self.model = "MobileNet/MobileNetSSD_deploy.caffemodel"
 		self.net = cv2.dnn.readNetFromCaffe(self.weights, self.model)
 		self.traffic_idxs = [2, 6, 7, 14, 15]
+		self.vehicles_only = [6, 7]
 		self.all_classes = [
 			"background", "aeroplane", "bicycle", "bird", "boat",
 			"bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
