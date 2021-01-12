@@ -2,10 +2,10 @@
 # December 2020
 
 
-from centroid_tracker import Centroid_Tracker
-from trackable_object import Trackable_Object
-from videostream import Video_Thread
-from mobilenet import Mnet
+from traffyc.centroid_tracker import Centroid_Tracker
+from traffyc.trackable_object import Trackable_Object
+from traffyc.videostream import Video_Thread
+from traffyc.mobilenet import Mnet
 import numpy as np
 import imutils
 import dlib
