@@ -115,9 +115,7 @@ class Traffic_Detection:
 				key = cv2.waitKey(1) & 0xFF
 				if key == ord("q"):
 					break
-		writer.release()
 		vs.release()
-		vs.stop()
 
 
 

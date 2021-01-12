@@ -67,6 +67,7 @@ class Video_Thread:
 
 
 	def release(self):
+		self.quit = 1
 		self.stream.release()
 
 
