@@ -1,6 +1,6 @@
 # trackable_object.py
 # December 2020
-# Software Engineering Project
+# Storing the updated locations and other info for tracked objects
 
 
 class Trackable_Object:

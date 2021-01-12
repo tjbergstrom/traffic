@@ -1,5 +1,7 @@
 # detect_and_track_traffic.py
 # December 2020
+# Read a video, make detections on frames, and track detected objects across frames.
+# Draw the detections on the frames and prepare the output for displaying and saving.
 
 
 from traffyc.centroid_tracker import Centroid_Tracker
@@ -25,8 +27,8 @@ class Traffic_Detection:
 		self.trackable_objects = {}
 		self.ct = Centroid_Tracker(8, 32)
 		self.resize_width = width
-		self.w = None
-		self.h = None
+		self.w = 0
+		self.h = 0
 
 
 	def detect(self, frame, rgb):
@@ -83,9 +85,9 @@ class Traffic_Detection:
 				to.centroids.append(c)
 			self.trackable_objects[objectID] = to
 			(start_x, start_y, end_x, end_y) = box
-			cv2.rectangle(frame, (start_x,start_y), (end_x,end_y), to.color, 1)
+			cv2.rectangle(frame, (start_x, start_y), (end_x, end_y), to.color, 1)
 			overlay = frame.copy()
-			radius = min( (end_x - start_x)//2 , (end_y - start_y)//2 )
+			radius = min( (end_x - start_x) // 2, (end_y - start_y) // 2 )
 			cv2.circle(overlay, (c[0], c[1]), (radius), to.color, -1)
 			frame = cv2.addWeighted(overlay, 0.3, frame, 0.7, 0, 0)
 			cv2.putText(frame, str(objectID), (c[0], c[1]), 0, 2, to.color, 3)
@@ -113,11 +115,9 @@ class Traffic_Detection:
 				key = cv2.waitKey(1) & 0xFF
 				if key == ord("q"):
 					break
-		# End while true reading video frames
 		writer.release()
 		vs.release()
 		vs.stop()
-	# End read_video()
 
 
 

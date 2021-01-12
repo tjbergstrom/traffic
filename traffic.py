@@ -3,9 +3,9 @@
 #
 # Run:
 # Just save the output video:
-# $ python3 traffic.py -i vid_inputs/vid8.mp4 -o vid_outputs/0.avi
+# $ python3 traffic.py -i vid_inputs/vid0.mp4 -o vid_outputs/0.avi
 # Just watch the output video:
-# $ python3 traffic.py -i vid_inputs/vid8.mp4 -v tru
+# $ python3 traffic.py -i vid_inputs/vid0.mp4 -v tru
 #   (hit 'q' to quit the video)
 
 

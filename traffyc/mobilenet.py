@@ -19,11 +19,11 @@ class Mnet:
 			"sofa", "train", "tvmonitor"
 		]
 		self.colors = {
-			"person" : (0,0,255),
-			"car" : (255,0,0),
-			"bus" : (225,25,0),
-			"motorbike" : (128,255,0),
-			"bicycle" : (0,255,0)
+			"bicycle" 	: (0, 255, 0)
+			"person" 	: (0, 0, 255),
+			"car" 		: (255, 0, 0),
+			"bus" 		: (225, 25, 0),
+			"motorbike" : (125, 255, 0),
 		}
 
 

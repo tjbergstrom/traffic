@@ -1,8 +1,6 @@
 # videostream.py
 # November 2020
-# Starts a thread for an input video file
-# Adds video frames to a thread-safe Python Queue
-# For faster video stream processing
+# Starts a thread for an video file and adds frames to a Queue for faster processing.
 
 
 from threading import Thread

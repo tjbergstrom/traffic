@@ -1,5 +1,6 @@
 # centroid_tracker.py
 # December 2020
+# Tracking the center xy coordinates of detected objects
 
 
 from scipy.spatial import distance as dist
