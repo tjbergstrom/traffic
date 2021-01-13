@@ -18,10 +18,10 @@
             - Just the needed properties of MobileNet.
 
 - ```vid_inputs/```
-    - Video files that you want to process,
+    - Video files that you want to process. Should be .mp4
 
 - ```vid_outputs/```
-    - Where the video files get saved after processing.
+    - The saved processed videos, can be either .avi or .mp4
 
 
 <br>

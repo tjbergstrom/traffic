@@ -1,4 +1,7 @@
-
+# yolo_proc.py
+# Dec. 2020
+#
+# Make detections of traffic objects with Yolo object detector.
 
 
 import numpy as np

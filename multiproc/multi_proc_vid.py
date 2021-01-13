@@ -21,6 +21,7 @@
 import os
 import cv2
 import time
+import imutils
 import subprocess as sp
 import multiprocessing as mp
 from yolo_proc import Yolo_Detection
@@ -50,14 +51,13 @@ def read_video(proc_num):
         check, frame = vs.read()
         if not check or frame is None:
             break
-        frame = YD.detect(frame)
-        writer.write(frame)
+        writer.write(YD.detect(imutils.resize(frame, w)))
         proc_frames += 1
         if proc_frames % (jump_unit//2) == 0:
             print(f"Process {proc_num} 50% complete")
     vs.release()
     writer.release()
-    print(f"Process {proc_num} complete")
+    print(f"Process {proc_num} 100% complete")
 
 
 def multi_process():
@@ -66,27 +66,32 @@ def multi_process():
     recombine_frames(processes)
 
 
-def meta_info(vid):
+def meta_info(vid, width=None):
     cap = cv2.VideoCapture(vid)
-    frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = int(cap.get(cv2.CAP_PROP_FPS))
-    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    if width is None:
+        w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    else:
+        (h, w) = imutils.resize(cap.read()[1], width=width).shape[:2]
     cap.release()
     return w, h, fps, frames
 
 
 if __name__ == "__main__":
     start = time.time()
-    in_vid = "../vid_inputs/vid8.mp4"
-    out_vid = "vid2_out.mp4"
-    w, h, fps, frames = meta_info(in_vid)
+    width = 360
+    #in_vid = "../vid_inputs/vid16.mp4"
+    in_vid = "inputs/vid1.mp4"
+    out_vid = "tmp.mp4"
+    w, h, fps, frames = meta_info(in_vid, width)
     fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
     processes = mp.cpu_count()
     jump_unit = frames // processes
     YD = Yolo_Detection(w, h)
     multi_process()
-    print(f"{time.time() - start:5f} seconds")
+    print(f"Finished: {time.time()-start:2f} seconds")
 
 
 
