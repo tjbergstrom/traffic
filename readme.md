@@ -24,6 +24,15 @@
     - The saved processed videos, can be either .avi or .mp4
 
 
+- ```multiproc/```
+    - Testing solutions for multi-processing videos:
+        - ```multi_proc_vid.py```
+            - Take a video, split up chunks of frames among available processors and run the object detection on each, then recombine the chunks of frames into the original order for an output video - works great for detection only, but not intended for tracking.
+        - ```yolo_proc.py```
+            - The detection processing used with multi_proc_vid.py - any detection method or processing can be used, just needs to input and output a frame.
+
+
+
 <br>
 <br>
 
