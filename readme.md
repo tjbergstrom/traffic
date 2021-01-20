@@ -25,7 +25,7 @@
 
 
 - ```multiproc/```
-    - Testing solutions for multi-processing videos:
+    - Trying out some solutions for multi-processing videos:
         - ```multi_proc_vid.py```
             - Take a video, split up chunks of frames among available processors and run the object detection on each, then recombine the chunks of frames into the original order for an output video - works great for detection only, but not intended for tracking.
         - ```yolo_proc.py```
@@ -37,6 +37,8 @@
 <br>
 
 ![alt text](https://raw.githubusercontent.com/tjbergstrom/traffic/master/vid_outputs/9.gif)
+
+*Detection and tracking with MobileNet!*
 
 
 
