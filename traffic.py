@@ -21,7 +21,7 @@ if __name__ == '__main__':
 	ap.add_argument("-i", "--input", required=True)
 	ap.add_argument("-o", "--output", required=False)
 	ap.add_argument("-v", "--playvid", type=bool, default=False)
-	ap.add_argument("-w", "--width", type=int, default=720)
+	ap.add_argument("-w", "--width", type=int, default=None)
 	args = vars(ap.parse_args())
 
 	in_vid = args["input"]

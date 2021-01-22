@@ -85,7 +85,11 @@ class Video_Thread:
 	def vid_dims(vid, width):
 		cap = cv2.VideoCapture(vid)
 		frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-		(h, w) = imutils.resize(cap.read()[1], width=width).shape[:2]
+		if width is None:
+		    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+		    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+		else:
+		    (h, w) = imutils.resize(cap.read()[1], width=width).shape[:2]
 		cap.release()
 		return w, h, frames
 
