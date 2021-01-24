@@ -75,7 +75,7 @@ class Yolo_Detection:
 				cv2.circle(overlay, (cx, cy), (radius), color, -1)
 				frame = cv2.addWeighted(overlay, 0.4, frame, 0.6, 0, 0)
 				cv2.circle(frame, (cx, cy), (radius), color, 1)
-				cv2.putText(frame, f"({cx},{cy})", (cx-radius, cy), 0, 1, (255,255,255), 1)
+				cv2.putText(frame, f"({cx},{cy})", (cx-radius//2, cy), 1, 0.70, (255,255,255), 2)
 		return frame
 
 
