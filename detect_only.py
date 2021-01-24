@@ -5,10 +5,11 @@
 #
 # This is a multi-processed solution for processing a video with detection only.
 # You split the video frames into blocks of frames among all available processors.
-# So each gets processed simultaneously.
+# So each block gets processed simultaneously.
 # And then recombine the blocks of frames into the original order.
 # So this works for detection only, and doesn't make sense for tracking,
 # Which requires reading the video frames contiguously.
+# Using the Yolo detector, but any could be used, just need to input/output a frame here
 
 
 import os

@@ -8,8 +8,8 @@ import cv2
 
 class Mnet:
 	def __init__(self):
-		self.weights = "MobileNet/MobileNetSSD_deploy.prototxt.txt"
-		self.model = "MobileNet/MobileNetSSD_deploy.caffemodel"
+		self.weights = "detectors/MobileNet/MobileNetSSD_deploy.prototxt.txt"
+		self.model = "detectors/MobileNet/MobileNetSSD_deploy.caffemodel"
 		self.net = cv2.dnn.readNetFromCaffe(self.weights, self.model)
 		self.traffic_idxs = [2, 6, 7, 14, 15]
 		self.vehicles_only = [6, 7]

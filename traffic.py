@@ -2,11 +2,14 @@
 # December 2020
 #
 # Run:
-# Just save the output video:
-# $ python3 traffic.py -i vid_inputs/vid0.mp4 -o vid_outputs/0.avi
+# Detection and tracking:
+# Just save the processed output video:
+# $ python3 traffic.py -i vid_inputs/vid0.mp4 -o vid_outputs/0.avi pt tru
 # Just watch the output video:
-# $ python3 traffic.py -i vid_inputs/vid0.mp4 -v tru
+# $ python3 traffic.py -i vid_inputs/vid0.mp4 -p tru -t tru
 #   (hit 'q' to quit the video)
+# Detection only, save the processed output video:
+# $ python3 traffic.py -i vid_inputs/vid0.mp4 -o vid_outputs/0.avi -d tru
 
 
 from detect_and_track_traffic import Traffic_Detection
@@ -20,7 +23,7 @@ if __name__ == '__main__':
 	ap = argparse.ArgumentParser()
 	ap.add_argument("-i", "--input", required=True)
 	ap.add_argument("-o", "--output", required=False)
-	ap.add_argument("-v", "--playvid", type=bool, default=False)
+	ap.add_argument("-p", "--playvid", type=bool, default=False)
 	ap.add_argument("-w", "--width", type=int, default=None)
 	ap.add_argument("-d", "--detect_only", type=bool, default=False)
 	ap.add_argument("-t", "--detect_and_track", type=bool, default=False)
