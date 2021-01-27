@@ -61,10 +61,10 @@ if __name__ == '__main__':
 
 	if out_vid:
 		if os.path.isfile(out_vid):
-			print("Output video successfully saved")
+			print(f"Output video successfully saved")
 		else:
-			sys.exit("Output video not saved")
-	print("Task failed successfully")
+			sys.exit(f"Output video not saved")
+	print(f"Finished successfully")
 
 
 
