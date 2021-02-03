@@ -18,9 +18,9 @@ import os
 
 
 class Traffic_Detection:
-	def __init__(self, width=720):
+	def __init__(self, width=720, freq=5):
 		self.trackers = []
-		self.detect_freq = 5
+		self.detect_freq = freq
 		self.frame_count = 0
 		self.mobile_net = Mnet()
 		self.net = self.mobile_net.net
@@ -93,7 +93,7 @@ class Traffic_Detection:
 			cv2.circle(overlay, (c[0], c[1]), (radius), to.color, -1)
 			frame = cv2.addWeighted(overlay, 0.4, frame, 0.6, 0, 0)
 			cv2.circle(frame, (c[0], c[1]), (radius), to.color, 1)
-			cv2.putText(frame, str(objectID), (c[0], c[1]), 0, 1.5, to.color, 3)
+			#cv2.putText(frame, str(objectID), (c[0], c[1]), 0, 1.5, to.color, 3)
 			cv2.putText(frame, f"({c[0]},{c[1]})", (c[0]-radius//2, c[1]), 0, 0.35, (255,255,255), 1)
 		return frame
 

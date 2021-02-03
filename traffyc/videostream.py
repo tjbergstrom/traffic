@@ -28,7 +28,7 @@ class Video_Thread:
 
 
 	def start(self):
-		time.sleep(0.5)
+		#time.sleep(0.5)
 		self.thread.start()
 		return self
 
@@ -95,7 +95,7 @@ class Video_Thread:
 
 
 	def status(self, frame_count):
-		if frame_count in self.statuses:
+		if frame_count in self.statuses: # O(1) time
 			print(self.statuses.get(frame_count))
 
 
