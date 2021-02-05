@@ -97,34 +97,40 @@ class Traffic_Detection:
 			frame = cv2.addWeighted(overlay, 0.4, frame, 0.6, 0, 0)
 			cv2.circle(frame, (c[0], c[1]), (radius), to.color, 1)
 			cv2.putText(frame, to.label, (start_x,start_y ), 0, 0.5, to.color, 2)
-			cv2.putText(frame, str(objectID), (c[0], c[1]), 0, 1.5, to.color, 3)
+			#cv2.putText(frame, f"{objectID}", (c[0], c[1]), 0, 1.5, to.color, 3)
 			cv2.putText(frame, f"({c[0]},{c[1]})", (c[0]-radius//2, c[1]), 0, 0.35, (255,255,255), 1)
 		return frame
 
 
 def read_video(proc_num):
-    verbose(f"Process: {proc_num}, start frame {jump_unit*proc_num}/{frames}")
-    TD = Traffic_Detection(w, h, freq)
-    vs = cv2.VideoCapture(in_vid)
-    vs.set(cv2.CAP_PROP_POS_FRAMES, jump_unit * proc_num)
-    proc_frames = 0
-    writer = cv2.VideoWriter(f"tmp_{proc_num}.mp4", fourcc, fps, (w, h), True)
-    while proc_frames < jump_unit:
-        check, frame = vs.read()
-        if not check or frame is None:
-            break
-        frame = imutils.resize(frame, width=w)
-        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame = TD.traffic_detections(frame, rgb)
-        writer.write(frame)
-        #writer.write(YD.detect(imutils.resize(frame, w)))
-        proc_frames += 1
-        TD.frame_count += 1
-        if proc_frames == (jump_unit // 2):
-            verbose(f"Process {proc_num} 50% complete")
-    vs.release()
-    writer.release()
-    verbose(f"Process {proc_num} 100% complete")
+	verbose(f"Process: {proc_num}, start frame {jump_unit*proc_num}/{frames}")
+	TD = Traffic_Detection(w, h, freq)
+	vs = cv2.VideoCapture(in_vid)
+	first_block = True if proc_num==0 else False
+	start_frame = jump_unit * proc_num
+	if not first_block:
+		start_frame -= 1
+	vs.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+	proc_frames = 0
+	writer = cv2.VideoWriter(f"tmp_{proc_num}.mp4", fourcc, fps, (w, h), True)
+	while proc_frames < jump_unit:
+		check, frame = vs.read()
+		if not check or frame is None:
+		    break
+		frame = imutils.resize(frame, width=w)
+		rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+		frame = TD.traffic_detections(frame, rgb)
+		#writer.write(YD.detect(imutils.resize(frame, w)))
+		proc_frames += 1
+		TD.frame_count += 1
+		if proc_frames == (jump_unit // 2):
+			verbose(f"Process {proc_num} 50% complete")
+		if not first_block and proc_frames == 1:
+			continue
+		writer.write(frame)
+	vs.release()
+	writer.release()
+	verbose(f"Process {proc_num} 100% complete")
 
 
 def recombine_frames():
