@@ -12,11 +12,6 @@ import time
 import cv2
 import sys
 import os
-import os
-import sys
-import cv2
-import time
-import imutils
 import argparse
 import subprocess as sp
 import multiprocessing as mp
@@ -112,7 +107,7 @@ def read_video(proc_num):
 		start_frame -= 1
 	vs.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
 	proc_frames = 0
-	writer = cv2.VideoWriter(f"tmp_{proc_num}.mp4", fourcc, fps, (w, h), True)
+	writer = cv2.VideoWriter(f"mpt/tmp_{proc_num}.mp4", fourcc, fps, (w, h), True)
 	while proc_frames < jump_unit:
 		check, frame = vs.read()
 		if not check or frame is None:
@@ -135,7 +130,7 @@ def read_video(proc_num):
 
 def recombine_frames():
     verbose("Recombining frames...")
-    tmp_files = [f"tmp_{i}.mp4" for i in range(processes)]
+    tmp_files = [f"mpt/tmp_{i}.mp4" for i in range(processes)]
     f = open("tmps.txt", "w")
     for i in tmp_files:
         f.write(f"file {i} \n")
@@ -145,9 +140,6 @@ def recombine_frames():
     for i in tmp_files:
         os.remove(i)
     os.remove("tmps.txt")
-
-
-
 
 
 def multi_process():
@@ -208,7 +200,7 @@ if __name__ == "__main__":
 	width = args["width"]
 	freq = args["freq"]
 	v = args["verbose"]
-	w, h, fps, frames = meta_info(in_vid, )
+	w, h, fps, frames = meta_info(in_vid, width)
 	fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
 	processes = min(mp.cpu_count(), frames)
 	checkargs(in_vid, out_vid, w, freq, frames, processes)
