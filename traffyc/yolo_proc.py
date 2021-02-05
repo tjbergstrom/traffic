@@ -29,6 +29,16 @@ class Yolo_Detection:
 		self.ln = [self.net.getLayerNames()[i[0] - 1] for i in self.net.getUnconnectedOutLayers()]
 		self.w = w
 		self.h = h
+		self.colrs = {
+			"bicycle" 	: (0, 255, 0),
+			"person" 	: (0, 0, 255),
+			"car" 		: (255, 0, 0),
+			"bus" 		: (225, 25, 0),
+			"motorbike" : (125, 255, 0),
+			"truck"		: (200, 50, 0),
+			"stop sign"	: (0, 50, 100),
+			"traffic light" : (0, 50, 125)
+		}
 
 
 	def detect(self, frame):

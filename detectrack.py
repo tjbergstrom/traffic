@@ -27,13 +27,52 @@ class Traffic_Detection:
 		self.trackers = []
 		self.frame_count = 0
 		self.detect_freq = freq
-		self.mobile_net = Mnet()
-		self.net = self.mobile_net.net
+		self.mobilenet = Mnet()
+		self.net = self.mobilenet.net
 		self.trackable_objects = {}
-		self.ct = Centroid_Tracker(8, 32)
+		self.ct = Centroid_Tracker(8, 64)
 
 
-	def detect(self, frame, rgb, v_only=True):
+	def yolo_detect(self, frame, rgb):
+		self.trackers = []
+		blob = cv2.dnn.blobFromImage(
+			frame,
+			1 / 255.0,
+			(416, 416),
+			swapRB=True,
+			crop=False)
+		YD.net.setInput(blob)
+		output_layers = YD.net.forward(YD.ln)
+		boxes = []
+		confidences = []
+		class_idxs = []
+		for layer in output_layers:
+			for detection in layer:
+				scores = detection[5:]
+				class_idx = np.argmax(scores)
+				confidence = scores[class_idx]
+				if confidence < 0.5:
+					continue
+				if class_idx not in YD.traffic_idxs:
+					continue
+				box = detection[0:4] * np.array([self.w, self.h, self.w, self.h])
+				(center_x, center_y, width, height) = box.astype("int")
+				x = int(center_x - (width / 2))
+				y = int(center_y - (height / 2))
+				boxes.append([x, y, int(width), int(height)])
+				confidences.append(float(confidence))
+				class_idxs.append(class_idx)
+		idxs = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.3)
+		if len(idxs) > 0:
+			for i in idxs.flatten():
+				(x, y) = (boxes[i][0], boxes[i][1])
+				(w, h) = (boxes[i][2], boxes[i][3])
+				tracker = dlib.correlation_tracker()
+				tracker.start_track(rgb, dlib.rectangle(x, y, x+w, y+h))
+				self.trackers.append((tracker, YD.all_classes[class_idxs[i]]))
+
+
+	def mobilenet_detect(self, frame, rgb, v_only=True):
 		self.trackers = []
 		blob = cv2.dnn.blobFromImage(
 			cv2.resize(frame, (300, 300)),
@@ -45,17 +84,17 @@ class Traffic_Detection:
 			if confidence < 0.4:
 				continue
 			class_idx = int(detections[0, 0, i, 1])
-			if class_idx not in self.mobile_net.traffic_idxs:
+			if class_idx not in self.mobilenet.traffic_idxs:
 				continue
-			if v_only and class_idx not in self.mobile_net.vehicles_only:
+			if v_only and class_idx not in self.mobilenet.vehicles_only:
 				continue
-			if class_idx not in self.mobile_net.vehicles_only and confidence < 0.6:
+			if class_idx not in self.mobilenet.vehicles_only and confidence < 0.6:
 				continue
 			box = detections[0, 0, i, 3:7] * np.array([self.w, self.h, self.w, self.h])
 			(start_x, start_y, end_x, end_y) = box.astype("int")
 			tracker = dlib.correlation_tracker()
-			tracker.start_track(rgb,  dlib.rectangle(start_x, start_y, end_x, end_y))
-			self.trackers.append((tracker, self.mobile_net.all_classes[class_idx]))
+			tracker.start_track(rgb, dlib.rectangle(start_x, start_y, end_x, end_y))
+			self.trackers.append((tracker, self.mobilenet.all_classes[class_idx]))
 
 
 	def track(self, tracker, label, boxs, rgb):
@@ -70,7 +109,8 @@ class Traffic_Detection:
 	def traffic_detections(self, frame, rgb):
 		boxs = []
 		if self.frame_count % self.detect_freq == 0:
-			self.detect(frame, rgb)
+			#self.mobilenet_detect(frame, rgb)
+			self.yolo_detect(frame, rgb)
 		else:
 			for tracker, label in self.trackers:
 				boxs = self.track(tracker, label, boxs, rgb)
@@ -80,7 +120,9 @@ class Traffic_Detection:
 			if to is None:
 				to = Trackable_Object(objectID, c)
 				to.label = label
-				to.color = self.mobile_net.colors[to.label]
+				#to.color = self.mobilenet.colors[to.label]
+				to.color = YD.colrs[to.label]
+				#print(f"{objectID}: {to.centroids}")
 			else:
 				to.centroids.append(c)
 			self.trackable_objects[objectID] = to
@@ -106,21 +148,18 @@ def read_video(proc_num):
 	if not first_block:
 		start_frame -= 1
 	vs.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
-	proc_frames = 0
 	writer = cv2.VideoWriter(f"mpt/tmp_{proc_num}.mp4", fourcc, fps, (w, h), True)
-	while proc_frames < jump_unit:
+	while TD.frame_count < jump_unit:
 		check, frame = vs.read()
 		if not check or frame is None:
 		    break
 		frame = imutils.resize(frame, width=w)
 		rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 		frame = TD.traffic_detections(frame, rgb)
-		#writer.write(YD.detect(imutils.resize(frame, w)))
-		proc_frames += 1
 		TD.frame_count += 1
-		if proc_frames == (jump_unit // 2):
+		if TD.frame_count == (jump_unit // 2):
 			verbose(f"Process {proc_num} 50% complete")
-		if not first_block and proc_frames == 1:
+		if not first_block and TD.frame_count == 1:
 			continue
 		writer.write(frame)
 	vs.release()
@@ -205,7 +244,7 @@ if __name__ == "__main__":
 	processes = min(mp.cpu_count(), frames)
 	checkargs(in_vid, out_vid, w, freq, frames, processes)
 	jump_unit = frames // processes
-	#YD = Yolo_Detection(w, h)
+	YD = Yolo_Detection(w, h)
 	multi_process()
 	if os.path.isfile(out_vid):
 		print(f"Output video successfully saved")
