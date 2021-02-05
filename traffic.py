@@ -45,7 +45,7 @@ if __name__ == '__main__':
 		sys.exit(f"Not saving or displaying output?")
 	if width and (width < 360 or width > 1800):
 		sys.exit(f"Width \'{width}\' out of range")
-	if freq < 1 or freq > 40:
+	if freq < 2 or freq > 40:
 		sys.exit(f"Detection frequency \'{freq}\' not supported")
 	if out_vid and os.path.isfile(out_vid):
 		print(f"Warning: will be over-writing output video \'{out_vid}\'")

@@ -7,7 +7,7 @@
 # You split the video frames into blocks of frames among all available processors.
 # So each block gets processed simultaneously.
 # And then recombine the blocks of frames into the original order.
-# Using the Yolo detector, but any could be used, just need to input/output a frame here
+# Using the Yolo detector, but any could be used, just need to input/output a frame here.
 
 
 import os
