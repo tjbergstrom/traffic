@@ -1,6 +1,8 @@
 
 
 
+# $ python3 detectrack.py -i vid_inputs/vid9.mp4 -o vid_outputs/tmp.avi -w 500 -f 10 
+
 from traffyc.centroid_tracker import Centroid_Tracker
 from traffyc.trackable_object import Trackable_Object
 from traffyc.videostream import Video_Thread
@@ -27,8 +29,6 @@ class Traffic_Detection:
 		self.trackers = []
 		self.frame_count = 0
 		self.detect_freq = freq
-		self.mobilenet = Mnet()
-		self.net = self.mobilenet.net
 		self.trackable_objects = {}
 		self.ct = Centroid_Tracker(8, 64)
 
@@ -77,24 +77,24 @@ class Traffic_Detection:
 		blob = cv2.dnn.blobFromImage(
 			cv2.resize(frame, (300, 300)),
 			0.007843, (300, 300), 127.5)
-		self.net.setInput(blob)
-		detections = self.net.forward()
+		MN.net.setInput(blob)
+		detections = MN.net.forward()
 		for i in np.arange(0, detections.shape[2]):
 			confidence = detections[0, 0, i, 2]
 			if confidence < 0.4:
 				continue
 			class_idx = int(detections[0, 0, i, 1])
-			if class_idx not in self.mobilenet.traffic_idxs:
+			if class_idx not in MN.traffic_idxs:
 				continue
-			if v_only and class_idx not in self.mobilenet.vehicles_only:
+			if v_only and class_idx not in MN.vehicles_only:
 				continue
-			if class_idx not in self.mobilenet.vehicles_only and confidence < 0.6:
+			if class_idx not in MN.vehicles_only and confidence < 0.6:
 				continue
 			box = detections[0, 0, i, 3:7] * np.array([self.w, self.h, self.w, self.h])
 			(start_x, start_y, end_x, end_y) = box.astype("int")
 			tracker = dlib.correlation_tracker()
 			tracker.start_track(rgb, dlib.rectangle(start_x, start_y, end_x, end_y))
-			self.trackers.append((tracker, self.mobilenet.all_classes[class_idx]))
+			self.trackers.append((tracker, MN.all_classes[class_idx]))
 
 
 	def track(self, tracker, label, boxs, rgb):
@@ -109,8 +109,8 @@ class Traffic_Detection:
 	def traffic_detections(self, frame, rgb):
 		boxs = []
 		if self.frame_count % self.detect_freq == 0:
-			#self.mobilenet_detect(frame, rgb)
-			self.yolo_detect(frame, rgb)
+			self.mobilenet_detect(frame, rgb)
+			#self.yolo_detect(frame, rgb)
 		else:
 			for tracker, label in self.trackers:
 				boxs = self.track(tracker, label, boxs, rgb)
@@ -120,9 +120,8 @@ class Traffic_Detection:
 			if to is None:
 				to = Trackable_Object(objectID, c)
 				to.label = label
-				#to.color = self.mobilenet.colors[to.label]
-				to.color = YD.colrs[to.label]
-				#print(f"{objectID}: {to.centroids}")
+				to.color = MN.colors[to.label]
+				#to.color = YD.colrs[to.label]
 			else:
 				to.centroids.append(c)
 			self.trackable_objects[objectID] = to
@@ -229,7 +228,7 @@ if __name__ == "__main__":
 	start = time.time()
 	ap = argparse.ArgumentParser()
 	ap.add_argument("-i", "--input", required=True)
-	ap.add_argument("-o", "--output", required=False)
+	ap.add_argument("-o", "--output", required=True)
 	ap.add_argument("-w", "--width", type=int, default=None)
 	ap.add_argument("-f", "--freq", type=int, default=2)
 	ap.add_argument("-v", "--verbose", type=bool, default=True)
@@ -245,6 +244,7 @@ if __name__ == "__main__":
 	checkargs(in_vid, out_vid, w, freq, frames, processes)
 	jump_unit = frames // processes
 	YD = Yolo_Detection(w, h)
+	MN = Mnet()
 	multi_process()
 	if os.path.isfile(out_vid):
 		print(f"Output video successfully saved")
