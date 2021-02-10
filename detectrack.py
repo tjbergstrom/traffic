@@ -1,7 +1,14 @@
+# detectrack.py
+# Feb 2021
+# Multi-processed detection with tracking!
+#
+# Pass every n-th frame to the object detector to get vehicle etc detections,
+# Use object tracking on the frames in between to keep track of their locations,
+# Implemented with both/either the MobileNet or the YoloV3 detectors.
+# Also use multi-processing to process blocks of frames simultaneously.
+#
+# $ python3 detectrack.py -i vid_inputs/vid9.mp4 -o vid_outputs/tmp.avi -w 500 -f 10
 
-
-
-# $ python3 detectrack.py -i vid_inputs/vid9.mp4 -o vid_outputs/tmp.avi -w 500 -f 10 
 
 from traffyc.centroid_tracker import Centroid_Tracker
 from traffyc.trackable_object import Trackable_Object
@@ -18,8 +25,6 @@ import argparse
 import subprocess as sp
 import multiprocessing as mp
 from traffyc.yolo_proc import Yolo_Detection
-
-
 
 
 class Traffic_Detection:
@@ -199,11 +204,6 @@ def meta_info(vid, width=None):
     return w, h, fps, frames
 
 
-def verbose(msg):
-    if v:
-        print(msg)
-
-
 def checkargs(in_vid, out_vid, w, freq, frames, processes):
 	if not os.path.isfile(in_vid):
 		sys.exit(f"\'{in_vid}\' is not a filepath")
@@ -224,6 +224,11 @@ def checkargs(in_vid, out_vid, w, freq, frames, processes):
 		time.sleep(3.0)
 
 
+def verbose(msg):
+    if args["verbose"]:
+        print(msg)
+
+
 if __name__ == "__main__":
 	start = time.time()
 	ap = argparse.ArgumentParser()
@@ -233,18 +238,18 @@ if __name__ == "__main__":
 	ap.add_argument("-f", "--freq", type=int, default=2)
 	ap.add_argument("-v", "--verbose", type=bool, default=True)
 	args = vars(ap.parse_args())
-	in_vid = args["input"]
 	out_vid = args["output"]
+	in_vid = args["input"]
 	width = args["width"]
 	freq = args["freq"]
-	v = args["verbose"]
 	w, h, fps, frames = meta_info(in_vid, width)
 	fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
 	processes = min(mp.cpu_count(), frames)
 	checkargs(in_vid, out_vid, w, freq, frames, processes)
 	jump_unit = frames // processes
-	YD = Yolo_Detection(w, h)
+	#YD = Yolo_Detection(w, h)
 	MN = Mnet()
+	os.system("mkdir -p mpt")
 	multi_process()
 	if os.path.isfile(out_vid):
 		print(f"Output video successfully saved")
