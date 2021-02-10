@@ -1,7 +1,12 @@
 
 
+
+- ```detectrack.py```
+    - The main script for multi-processed detection with tracking. Run it with:
+        - $ python3 detectrack.py -i vid_inputs/vid9.mp4 -o vid_outputs/tmp.avi -w 500 -f 10
+
 - ```traffic.py```
-    - The main script. Run it with:
+    - The main script for detection with either mp or tracking. Run it with:
         - ```$ python3 traffic.py -i vid_inputs/vid0.mp4 -o vid_outputs/0.avi -d tru```
             - detection only, save the output video
         - ```$ python3 traffic.py -i vid_inputs/vid0.mp4 -o vid_outputs/0.avi -t tru```

@@ -3,9 +3,9 @@
 # Multi-processed detection with tracking!
 #
 # Pass every n-th frame to the object detector to get vehicle etc detections,
-# Use object tracking on the frames in between to keep track of their locations,
-# Implemented with both/either the MobileNet or the YoloV3 detectors.
+# Use object tracking on the frames in between to keep track of only their locations,
 # Also use multi-processing to process blocks of frames simultaneously.
+# Implemented with both/either the MobileNet or the YoloV3 detectors.
 #
 # $ python3 detectrack.py -i vid_inputs/vid9.mp4 -o vid_outputs/tmp.avi -w 500 -f 10
 
@@ -19,8 +19,8 @@ import imutils
 import dlib
 import time
 import cv2
-import sys
 import os
+import sys
 import argparse
 import subprocess as sp
 import multiprocessing as mp
@@ -172,36 +172,36 @@ def read_video(proc_num):
 
 
 def recombine_frames():
-    verbose("Recombining frames...")
-    tmp_files = [f"mpt/tmp_{i}.mp4" for i in range(processes)]
-    f = open("tmps.txt", "w")
-    for i in tmp_files:
-        f.write(f"file {i} \n")
-    f.close()
-    cmd = f"ffmpeg -y -loglevel error -f concat -safe 0 -i tmps.txt -vcodec copy {out_vid}"
-    sp.Popen(cmd, shell=True).wait()
-    for i in tmp_files:
-        os.remove(i)
-    os.remove("tmps.txt")
+	verbose("Recombining frames...")
+	tmp_files = [f"mpt/tmp_{i}.mp4" for i in range(processes)]
+	f = open("tmps.txt", "w")
+	for i in tmp_files:
+		f.write(f"file {i} \n")
+	f.close()
+	cmd = f"ffmpeg -y -loglevel error -f concat -safe 0 -i tmps.txt -vcodec copy {out_vid}"
+	sp.Popen(cmd, shell=True).wait()
+	for i in tmp_files:
+		os.remove(i)
+	os.remove("tmps.txt")
 
 
 def multi_process():
-    p = mp.Pool(processes)
-    p.map(read_video, range(processes))
-    recombine_frames()
+	p = mp.Pool(processes)
+	p.map(read_video, range(processes))
+	recombine_frames()
 
 
 def meta_info(vid, width=None):
-    cap = cv2.VideoCapture(vid)
-    fps = int(cap.get(cv2.CAP_PROP_FPS))
-    frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    if width is None:
-        w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    else:
-        (h, w) = imutils.resize(cap.read()[1], width=width).shape[:2]
-    cap.release()
-    return w, h, fps, frames
+	cap = cv2.VideoCapture(vid)
+	fps = int(cap.get(cv2.CAP_PROP_FPS))
+	frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+	if width is None:
+		w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+		h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+	else:
+		(h, w) = imutils.resize(cap.read()[1], width=width).shape[:2]
+	cap.release()
+	return w, h, fps, frames
 
 
 def checkargs(in_vid, out_vid, w, freq, frames, processes):
@@ -225,8 +225,8 @@ def checkargs(in_vid, out_vid, w, freq, frames, processes):
 
 
 def verbose(msg):
-    if args["verbose"]:
-        print(msg)
+	if args["verbose"]:
+		print(msg)
 
 
 if __name__ == "__main__":
