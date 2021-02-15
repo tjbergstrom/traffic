@@ -74,10 +74,10 @@ class Yolo_Detection:
 			for i in idxs.flatten():
 				(x, y) = (boxes[i][0], boxes[i][1])
 				(w, h) = (boxes[i][2], boxes[i][3])
-				color = self.colors[class_idxs[i]]
+				label = self.all_classes[class_idxs[i]]
+				color = self.colrs[label]
 				cv2.rectangle(frame, (x, y), (x+w, y+h), color, 1)
-				#label = self.all_classes[class_idxs[i]]
-				#cv2.putText(frame, label, (x, y-5), 0, 0.5, color, 2)
+				cv2.putText(frame, label, (x, y-5), 0, 0.5, color, 2)
 				overlay = frame.copy()
 				radius = min(w // 2, h // 2)
 				cx = (w // 2) + x
