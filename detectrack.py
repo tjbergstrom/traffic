@@ -10,6 +10,7 @@
 # $ python3 detectrack.py -i vid_inputs/vid9.mp4 -o vid_outputs/tmp.avi -w 500 -f 10
 #
 # Use -y 100 to use the YoloV3 every 100th frame. Default is to not use it at all.
+# Use -y == -f to use the YoloV3 always instead of the MobileNet
 
 
 from traffyc.centroid_tracker import Centroid_Tracker
@@ -211,7 +212,7 @@ def meta_info(vid, width=None):
 	return w, h, fps, frames
 
 
-def checkargs(in_vid, out_vid, w, freq, frames, processes):
+def checkargs(in_vid, out_vid, w, y, freq, frames, processes):
 	if not os.path.isfile(in_vid):
 		sys.exit(f"\'{in_vid}\' is not a filepath")
 	if not os.path.isdir(os.path.dirname(out_vid)):
@@ -226,6 +227,8 @@ def checkargs(in_vid, out_vid, w, freq, frames, processes):
 		sys.exit(f"No processors found")
 	if frames < processes:
 		sys.exit(f"Video is too short")
+	if y != -1 and y < freq:
+		sys.exit(f"-y {y} and -f {freq} not supported")
 	if os.path.isfile(out_vid):
 		print(f"Warning: will be over-writing output video \'{out_vid}\'")
 		time.sleep(3.0)
@@ -253,7 +256,7 @@ if __name__ == "__main__":
 	w, h, fps, frames = meta_info(in_vid, args["width"])
 	fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
 	processes = min(mp.cpu_count(), frames)
-	checkargs(in_vid, out_vid, w, freq, frames, processes)
+	checkargs(in_vid, out_vid, w, yolo, freq, frames, processes)
 	jump_unit = frames // processes
 	#YD = Yolo_Detection(w, h)
 	MN = Mnet()
