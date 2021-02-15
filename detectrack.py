@@ -8,6 +8,8 @@
 # Implemented with both/either the MobileNet or the YoloV3 detectors.
 #
 # $ python3 detectrack.py -i vid_inputs/vid9.mp4 -o vid_outputs/tmp.avi -w 500 -f 10
+#
+# Use -y 100 to use the YoloV3 every 100th frame. Default is to not use it at all.
 
 
 from traffyc.centroid_tracker import Centroid_Tracker
@@ -28,14 +30,16 @@ from traffyc.yolo_proc import Yolo_Detection
 
 
 class Traffic_Detection:
-	def __init__(self, w, h, freq=5):
+	def __init__(self, w, h, yolo, freq=5):
 		self.w = w
 		self.h = h
 		self.trackers = []
 		self.frame_count = 0
+		self.yolo = yolo
 		self.detect_freq = freq
 		self.trackable_objects = {}
 		self.ct = Centroid_Tracker(8, 64)
+		self.YD = Yolo_Detection(w, h) if yolo>0 else None
 
 
 	def yolo_detect(self, frame, rgb):
@@ -46,8 +50,8 @@ class Traffic_Detection:
 			(416, 416),
 			swapRB=True,
 			crop=False)
-		YD.net.setInput(blob)
-		output_layers = YD.net.forward(YD.ln)
+		self.YD.net.setInput(blob)
+		output_layers = self.YD.net.forward(self.YD.ln)
 		boxes = []
 		confidences = []
 		class_idxs = []
@@ -58,7 +62,7 @@ class Traffic_Detection:
 				confidence = scores[class_idx]
 				if confidence < 0.5:
 					continue
-				if class_idx not in YD.traffic_idxs:
+				if class_idx not in self.YD.traffic_idxs:
 					continue
 				box = detection[0:4] * np.array([self.w, self.h, self.w, self.h])
 				(center_x, center_y, width, height) = box.astype("int")
@@ -74,7 +78,7 @@ class Traffic_Detection:
 				(w, h) = (boxes[i][2], boxes[i][3])
 				tracker = dlib.correlation_tracker()
 				tracker.start_track(rgb, dlib.rectangle(x, y, x+w, y+h))
-				self.trackers.append((tracker, YD.all_classes[class_idxs[i]]))
+				self.trackers.append((tracker, self.YD.all_classes[class_idxs[i]]))
 
 
 	def mobilenet_detect(self, frame, rgb, v_only=True):
@@ -113,9 +117,11 @@ class Traffic_Detection:
 
 	def traffic_detections(self, frame, rgb):
 		boxs = []
-		if self.frame_count % self.detect_freq == 0:
+		if self.frame_count % self.yolo == 0 and self.yolo > 0:
+			self.yolo_detect(frame, rgb)
+			verbose(f"Yolo detection (frame {self.frame_count})")
+		elif self.frame_count % self.detect_freq == 0:
 			self.mobilenet_detect(frame, rgb)
-			#self.yolo_detect(frame, rgb)
 		else:
 			for tracker, label in self.trackers:
 				boxs = self.track(tracker, label, boxs, rgb)
@@ -126,7 +132,7 @@ class Traffic_Detection:
 				to = Trackable_Object(objectID, c)
 				to.label = label
 				to.color = MN.colors[to.label]
-				#to.color = YD.colrs[to.label]
+				#to.color = self.YD.colrs[to.label]
 			else:
 				to.centroids.append(c)
 			self.trackable_objects[objectID] = to
@@ -145,7 +151,7 @@ class Traffic_Detection:
 
 def read_video(proc_num):
 	verbose(f"Process: {proc_num}, start frame {jump_unit*proc_num}/{frames}")
-	TD = Traffic_Detection(w, h, freq)
+	TD = Traffic_Detection(w, h, yolo, freq)
 	vs = cv2.VideoCapture(in_vid)
 	first_block = True if proc_num==0 else False
 	start_frame = jump_unit * proc_num
@@ -160,6 +166,7 @@ def read_video(proc_num):
 		frame = imutils.resize(frame, width=w)
 		rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 		frame = TD.traffic_detections(frame, rgb)
+		cv2.putText(frame, f"{ (jump_unit * proc_num) + TD.frame_count }", (10, 10), 0, 0.35, (20,255,10), 1)
 		TD.frame_count += 1
 		if TD.frame_count == (jump_unit // 2):
 			verbose(f"Process {proc_num} 50% complete")
@@ -237,12 +244,13 @@ if __name__ == "__main__":
 	ap.add_argument("-w", "--width", type=int, default=None)
 	ap.add_argument("-f", "--freq", type=int, default=2)
 	ap.add_argument("-v", "--verbose", type=bool, default=True)
+	ap.add_argument("-y", "--yolo", type=int, default=-1, help="how often to use YoloV3")
 	args = vars(ap.parse_args())
 	out_vid = args["output"]
 	in_vid = args["input"]
-	width = args["width"]
+	yolo = args["yolo"]
 	freq = args["freq"]
-	w, h, fps, frames = meta_info(in_vid, width)
+	w, h, fps, frames = meta_info(in_vid, args["width"])
 	fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
 	processes = min(mp.cpu_count(), frames)
 	checkargs(in_vid, out_vid, w, freq, frames, processes)

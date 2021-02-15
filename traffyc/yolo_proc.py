@@ -14,7 +14,7 @@ import os
 
 class Yolo_Detection:
 	def __init__(self, w, h):
-		self.all_classes = open("detectors/yolo-coco/coco.names").read().strip().split("\n")
+		self.all_classes = open("detectors/yolo-coco/coco.names", "r").read().strip().split("\n")
 		self.traffic_idxs = [0, 1, 2, 3, 5, 7, 9, 11]
 		self.traffic_labels = [self.all_classes[i] for i in self.traffic_idxs]
 		self.colors = [(0,0,0)] * len(self.all_classes)
@@ -33,11 +33,11 @@ class Yolo_Detection:
 			"bicycle" 	: (0, 255, 0),
 			"person" 	: (0, 0, 255),
 			"car" 		: (255, 0, 0),
-			"bus" 		: (225, 25, 0),
+			"bus" 		: (225, 100, 0),
 			"motorbike" : (125, 255, 0),
-			"truck"		: (200, 50, 0),
+			"truck"		: (200, 150, 0),
 			"stop sign"	: (0, 50, 100),
-			"traffic light" : (0, 50, 125)
+			"traffic light" : (0, 100, 255)
 		}
 
 
