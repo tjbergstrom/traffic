@@ -5,12 +5,12 @@ import cv2
 
 
 indir = "vid_data"
-outvid = "vid_inputs/lidarvid.mp4"
 fourcc = cv2.VideoWriter_fourcc(*"MJPG")
-writer = None
 
-for vid_file in sorted(os.listdir(indir)):
+for i, vid_file in enumerate(sorted(os.listdir(indir))):
 	print(f"Saving: {vid_file}")
+	writer = None
+	outvid = f"{indir}/{i}.mp4"
 	vs = cv2.VideoCapture(f"{indir}/{vid_file}")
 	w = int(vs.get(cv2.CAP_PROP_FRAME_WIDTH))
 	h = int(vs.get(cv2.CAP_PROP_FRAME_HEIGHT))
