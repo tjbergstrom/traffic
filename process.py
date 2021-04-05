@@ -1,6 +1,7 @@
 
 
 import os
+import sys
 import cv2
 
 
@@ -21,8 +22,12 @@ for i, vid_file in enumerate(sorted(os.listdir(indir))):
 			break
 		if writer is None:
 			writer = cv2.VideoWriter(outvid, fourcc, fps, (w, h), True)
-		writer.write(frame)
+		if writer:
+			writer.write(frame)
+		else:
+			sys.exit(1)
 	vs.release()
+	writer.release()
 
 
 
