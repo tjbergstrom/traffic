@@ -4,7 +4,7 @@
 # Run:
 # Detection and tracking:
 # Just save the processed output video:
-# $ python3 traffic.py -i vid_inputs/vid0.mp4 -o vid_outputs/0.avi pt tru
+# $ python3 traffic.py -i vid_inputs/vid0.mp4 -o vid_outputs/0.avi -t tru
 # Just watch the output video:
 # $ python3 traffic.py -i vid_inputs/vid0.mp4 -p tru -t tru
 #   (hit 'q' to quit the video)
