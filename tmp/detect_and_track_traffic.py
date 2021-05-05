@@ -18,7 +18,7 @@ import os
 
 
 class Traffic_Detection:
-	def __init__(self, width=720, freq=5):
+	def __init__(self, width=None, freq=5):
 		self.detect_freq = freq
 		self.resize_width = width
 		self.mn = Mnet() # using this self.mn instead of Mnet() reduces runtime by a half!
@@ -108,7 +108,8 @@ class Traffic_Detection:
 			frame = vs.read()
 			if frame is None:
 				break
-			frame = imutils.resize(frame, width=self.resize_width)
+			if self.resize_width:
+				frame = imutils.resize(frame, width=self.resize_width)
 			rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 			frame = self.traffic_detections(frame, rgb)
 			self.frame_count += 1

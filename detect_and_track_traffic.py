@@ -15,10 +15,11 @@ import time
 import cv2
 import sys
 import os
+import random
 
 
 class Traffic_Detection:
-	def __init__(self, width=720, freq=5):
+	def __init__(self, width=None, freq=5):
 		self.trackers = []
 		self.detect_freq = freq
 		self.frame_count = 0
@@ -29,6 +30,10 @@ class Traffic_Detection:
 		self.resize_width = width
 		self.w = 0
 		self.h = 0
+		#f = open("mpt/points.csv", "r")
+		#self.point_frames = f.readlines()
+		#self.point_frames = []
+		#f.close()
 
 
 	def detect(self, frame, rgb, v_only=True):
@@ -70,6 +75,7 @@ class Traffic_Detection:
 
 
 	def traffic_detections(self, frame, rgb):
+		#self.point_frames.append([])
 		boxs = []
 		if self.frame_count % self.detect_freq == 0:
 			self.detect(frame, rgb)
@@ -87,7 +93,7 @@ class Traffic_Detection:
 				to.centroids.append(c)
 			self.trackable_objects[objectID] = to
 			(start_x, start_y, end_x, end_y) = box
-			cv2.rectangle(frame, (start_x, start_y), (end_x, end_y), to.color, 1)
+			cv2.rectangle(frame, (start_x, start_y), (end_x, end_y), to.color, 2)
 			overlay = frame.copy()
 			radius = min( (end_x - start_x) // 2, (end_y - start_y) // 2 )
 			cv2.circle(overlay, (c[0], c[1]), (radius), to.color, -1)
@@ -95,7 +101,34 @@ class Traffic_Detection:
 			cv2.circle(frame, (c[0], c[1]), (radius), to.color, 1)
 			#cv2.putText(frame, str(objectID), (c[0], c[1]), 0, 1.5, to.color, 3)
 			cv2.putText(frame, f"({c[0]},{c[1]})", (c[0]-radius//2, c[1]), 0, 0.35, (255,255,255), 1)
+			##frame = self.save_points(frame, c, box)
 		return frame
+
+
+	def save_points(self, c, box):
+		from scipy.spatial import distance as dist
+		(start_x, start_y, end_x, end_y) = box
+		radius = min( (end_x - start_x) // 2, (end_y - start_y) // 2 )
+		for i in range(128):
+			x = int(random.uniform(start_x, end_x))
+			y = int(random.uniform(start_y, end_y))
+			r_2 = dist.euclidean((x, y), (c[0], c[1]))
+			if r_2 <= radius:
+				self.point_frames[self.frame_count].append(f"{x} {y}")
+
+
+	def draw_points(self, frame):
+		colrs = [(255,0,0), (0,255,0), (0,0,255), (255,255,0), (0,255,255), (255,0,255)]
+		point_frame = self.point_frames[self.frame_count].replace("\n", "")
+		for point in point_frame.split(","):
+			if point:
+				x = int(point.split(" ")[0])
+				y = int(point.split(" ")[1])
+				c = random.randrange(0, len(colrs))
+				cv2.circle(frame, (x, y), 3, colrs[c], -1)
+		return frame
+
+
 
 
 	def read_video(self, vid_path, output, play):
@@ -107,9 +140,11 @@ class Traffic_Detection:
 			frame = vs.read()
 			if frame is None:
 				break
-			frame = imutils.resize(frame, width=self.resize_width)
+			if self.resize_width:
+				frame = imutils.resize(frame, width=self.resize_width)
 			rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 			frame = self.traffic_detections(frame, rgb)
+			#frame = self.draw_points(frame)
 			self.frame_count += 1
 			if output:
 				writer.write(frame)
@@ -120,6 +155,15 @@ class Traffic_Detection:
 				if key == ord("q"):
 					break
 		vs.release()
+
+		'''
+		f = open("mpt/points.csv", "w")
+		for point_frame in self.point_frames:
+			for points in point_frame:
+				f.write(f"{points},")
+			f.write("\n")
+		f.close()
+		'''
 
 
 
