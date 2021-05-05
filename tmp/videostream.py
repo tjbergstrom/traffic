@@ -5,7 +5,6 @@
 
 from threading import Thread
 from queue import Queue
-import imutils
 import cv2
 import time
 
@@ -89,14 +88,28 @@ class Video_Thread:
 		    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 		    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 		else:
-		    (h, w) = imutils.resize(cap.read()[1], width=width).shape[:2]
+		    (h, w) = Video_Thread.resize(cap.read()[1], width=width).shape[:2]
 		cap.release()
 		return w, h, frames
 
 
 	def status(self, frame_count):
-		if frame_count in self.statuses: # O(1) time
+		if frame_count in self.statuses:
 			print(self.statuses.get(frame_count))
+
+
+	@staticmethod
+	def resize(frame, width=None, height=None, inter=cv2.INTER_AREA):
+		if width is None and height is None:
+		    return frame
+		(h, w) = frame.shape[:2]
+		if width is None:
+		    ratio = height / float(h)
+		    dim = (int(w * ratio), height)
+		else:
+		    ratio = width / float(w)
+		    dim = (width, int(h * ratio))
+		return cv2.resize(frame, dim, interpolation=inter)
 
 
 

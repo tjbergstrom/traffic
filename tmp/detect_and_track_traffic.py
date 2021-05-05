@@ -1,7 +1,7 @@
 # detect_and_track_traffic.py
 # December 2020
 # Read a video, make detections on frames, and track detected objects across frames.
-# Draw the detections on the frames and prepare the output for displaying and saving.
+# Draw the detections on the frames, prepare the output, and save the processed video.
 
 
 from centroid_tracker import Centroid_Tracker
@@ -9,7 +9,6 @@ from trackable_object import Trackable_Object
 from videostream import Video_Thread
 from mobilenet import Mnet
 import numpy as np
-import imutils
 import dlib
 import time
 import cv2
@@ -21,7 +20,7 @@ class Traffic_Detection:
 	def __init__(self, width=None, freq=5):
 		self.detect_freq = freq
 		self.resize_width = width
-		self.mn = Mnet() # using this self.mn instead of Mnet() reduces runtime by a half!
+		self.mn = Mnet()
 		self.net = self.mn.net
 		self.frame_count = 0
 		self.trackers = []
@@ -93,9 +92,9 @@ class Traffic_Detection:
 			cv2.circle(overlay, (c[0], c[1]), (radius), to.color, -1)
 			frame = cv2.addWeighted(overlay, 0.4, frame, 0.6, 0, 0)
 			cv2.circle(frame, (c[0], c[1]), (radius), to.color, 1)
-			#cv2.putText(frame, str(objectID), (start_x+10, start_y+15), 0, 0.55, (255,255,255), 2)
+			cv2.putText(frame, str(objectID), (start_x+10, start_y+15), 0, 0.55, (255,255,255), 2)
 			cv2.putText(frame, f"({c[0]},{c[1]})", (c[0]-radius//2, c[1]), 0, 0.35, (255,255,255), 1)
-		#cv2.putText(frame, f"{self.frame_count}", (10, 10), 0, 0.35, (20,255,10), 1)
+		cv2.putText(frame, f"{self.frame_count}", (10, 10), 0, 0.35, (20,255,10), 1)
 		return frame
 
 
@@ -109,7 +108,7 @@ class Traffic_Detection:
 			if frame is None:
 				break
 			if self.resize_width:
-				frame = imutils.resize(frame, width=self.resize_width)
+				frame = vs.resize(frame, width=self.resize_width)
 			rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 			frame = self.traffic_detections(frame, rgb)
 			self.frame_count += 1
