@@ -19,14 +19,14 @@ import os
 
 class Traffic_Detection:
 	def __init__(self, width=720, freq=5):
-		self.trackers = []
 		self.detect_freq = freq
+		self.resize_width = width
+		self.mn = Mnet() # using this self.mn instead of Mnet() reduces runtime by a half!
+		self.net = self.mn.net
 		self.frame_count = 0
-		self.mobile_net = Mnet()
-		self.net = self.mobile_net.net
+		self.trackers = []
 		self.trackable_objects = {}
 		self.ct = Centroid_Tracker(8, 32)
-		self.resize_width = width
 		self.w = 0
 		self.h = 0
 
@@ -43,13 +43,13 @@ class Traffic_Detection:
 			if confidence < 0.4:
 				continue
 			class_idx = int(detections[0, 0, i, 1])
-			if class_idx not in self.mobile_net.traffic_idxs:
+			if class_idx not in self.mn.traffic_idxs:
 				continue
-			if v_only and class_idx not in self.mobile_net.vehicles_only:
+			if v_only and class_idx not in self.mn.vehicles_only:
 				continue
-			if class_idx not in self.mobile_net.vehicles_only and confidence < 0.6:
+			if class_idx not in self.mn.vehicles_only and confidence < 0.6:
 				continue
-			label = self.mobile_net.all_classes[class_idx]
+			label = self.mn.all_classes[class_idx]
 			box = detections[0, 0, i, 3:7] * np.array([self.w, self.h, self.w, self.h])
 			(start_x, start_y, end_x, end_y) = box.astype("int")
 			tracker = dlib.correlation_tracker()
@@ -82,7 +82,7 @@ class Traffic_Detection:
 			if to is None:
 				to = Trackable_Object(objectID, c)
 				to.label = label
-				to.color = self.mobile_net.colors[to.label]
+				to.color = self.mn.colors[to.label]
 			else:
 				to.centroids.append(c)
 			self.trackable_objects[objectID] = to
@@ -93,8 +93,9 @@ class Traffic_Detection:
 			cv2.circle(overlay, (c[0], c[1]), (radius), to.color, -1)
 			frame = cv2.addWeighted(overlay, 0.4, frame, 0.6, 0, 0)
 			cv2.circle(frame, (c[0], c[1]), (radius), to.color, 1)
-			#cv2.putText(frame, str(objectID), (c[0], c[1]), 0, 1.5, to.color, 3)
+			#cv2.putText(frame, str(objectID), (start_x+10, start_y+15), 0, 0.55, (255,255,255), 2)
 			cv2.putText(frame, f"({c[0]},{c[1]})", (c[0]-radius//2, c[1]), 0, 0.35, (255,255,255), 1)
+		#cv2.putText(frame, f"{self.frame_count}", (10, 10), 0, 0.35, (20,255,10), 1)
 		return frame
 
 
@@ -111,7 +112,7 @@ class Traffic_Detection:
 			rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 			frame = self.traffic_detections(frame, rgb)
 			self.frame_count += 1
-			if output:
+			if writer:
 				writer.write(frame)
 				vs.status(self.frame_count)
 		vs.release()
