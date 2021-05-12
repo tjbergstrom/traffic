@@ -5,6 +5,7 @@
 
 from threading import Thread
 from queue import Queue
+import cviz
 import cv2
 import time
 
@@ -14,6 +15,7 @@ class Video_Thread:
 		self.stream = cv2.VideoCapture(src)
 		self.que = Queue(maxsize=256)
 		self.quit = 0
+		self.src = src
 		self.thread = Thread(
 			target=self.update,
 			args=(),
@@ -65,7 +67,10 @@ class Video_Thread:
 
 
 	def frames(self):
-		return int(self.stream.get(cv2.CAP_PROP_FRAME_COUNT))
+		frames = int(self.stream.get(cv2.CAP_PROP_FRAME_COUNT))
+		if frames <= 0:
+			frames = cviz.frame_cnt(self.src)
+		return frames
 
 
 	def fps(self):
