@@ -8,10 +8,12 @@
 	- Read video, detect and track vehicles, save output video.
 - centeroid_tracker.py and trackable_object.py
 	- For object tracking.
+- cviz.py
+	- Other video processing stuff.
 - mobilenet.py
 	- MobileNet stuff.
 - videostream.py
-	- Multi-threaded video stream reading and other video processing.
+	- Multi-threaded video stream reading.
 - detectors/
 	- Location of MobileNet.
 - vid_inputs/

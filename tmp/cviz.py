@@ -8,8 +8,8 @@ import sys
 import cv2
 
 
-def vid_dimz(vid, width=None):
-	cap = cv2.VideoCapture(vid)
+def vid_dimz(src, width=None):
+	cap = cv2.VideoCapture(src)
 	if width is None:
 	    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 	    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))

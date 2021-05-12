@@ -105,8 +105,7 @@ class Traffic_Detection:
 		self.w, self.h = cviz.vid_dimz(vid_path, self.resize_width)
 		vs = Video_Thread(vid_path).start()
 		self.set_status(vs.frames())
-		if output:
-			writer = cviz.vid_writer(output, self.w, self.h, vs.fps())
+		writer = cviz.vid_writer(output, self.w, self.h, vs.fps())
 		while True:
 			frame = vs.read()
 			if frame is None:
@@ -114,16 +113,15 @@ class Traffic_Detection:
 			if self.resize_width:
 				frame = cviz.resize(frame, width=self.resize_width)
 			frame = self.traffic_detections(frame)
-			if writer:
-				writer.write(frame)
-				self.status()
+			writer.write(frame)
+			self.status()
 			self.frame_count += 1
 		vs.release()
 
 
 	def set_status(self, frames):
+		print(f"Processing {frames} video frames")
 		self.statuses = {
-			int(frames*0.0)  :  "0% complete",
 			int(frames*0.25) : "25% complete",
 			int(frames*0.50) : "50% complete",
 			int(frames*0.75) : "75% complete",
