@@ -14,7 +14,7 @@ def vid_dimz(vid, width=None):
 	    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 	    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 	else:
-	    (h, w) = cviz.resize(cap.read()[1], width=width).shape[:2]
+	    (h, w) = resize(cap.read()[1], width=width).shape[:2]
 	cap.release()
 	return w, h
 

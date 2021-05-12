@@ -72,4 +72,5 @@ class Video_Thread:
 		return self.stream.get(cv2.CAP_PROP_FPS)
 
 
+
 ##
