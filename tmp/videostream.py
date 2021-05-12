@@ -10,7 +10,7 @@ import time
 
 
 class Video_Thread:
-	def __init__(self, src, frames):
+	def __init__(self, src):
 		self.stream = cv2.VideoCapture(src)
 		self.que = Queue(maxsize=256)
 		self.quit = 0
@@ -19,12 +19,6 @@ class Video_Thread:
 			args=(),
 			daemon=True,
 		)
-		self.statuses = {
-			int(frames*0.01) : "1% complete",
-			int(frames*0.25) : "25% complete",
-			int(frames*0.50) : "50% complete",
-			int(frames*0.75) : "75% complete",
-		}
 
 
 	def start(self):
@@ -70,47 +64,12 @@ class Video_Thread:
 		self.stream.release()
 
 
+	def frames(self):
+		return int(self.stream.get(cv2.CAP_PROP_FRAME_COUNT))
+
+
 	def fps(self):
 		return self.stream.get(cv2.CAP_PROP_FPS)
-
-
-	def vid_writer(self, output, w, h):
-		fourcc = cv2.VideoWriter_fourcc(*"MJPG")
-		writer = cv2.VideoWriter(output, fourcc, self.fps(), (w, h), True)
-		return writer
-
-
-	@staticmethod
-	def vid_dims(vid, width):
-		cap = cv2.VideoCapture(vid)
-		frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-		if width is None:
-		    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-		    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-		else:
-		    (h, w) = Video_Thread.resize(cap.read()[1], width=width).shape[:2]
-		cap.release()
-		return w, h, frames
-
-
-	def status(self, frame_count):
-		if frame_count in self.statuses:
-			print(self.statuses.get(frame_count))
-
-
-	@staticmethod
-	def resize(frame, width=None, height=None, inter=cv2.INTER_AREA):
-		if width is None and height is None:
-		    return frame
-		(h, w) = frame.shape[:2]
-		if width is None:
-		    ratio = height / float(h)
-		    dim = (int(w * ratio), height)
-		else:
-		    ratio = width / float(w)
-		    dim = (width, int(h * ratio))
-		return cv2.resize(frame, dim, interpolation=inter)
-
 
 
 ##

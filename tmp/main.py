@@ -6,6 +6,7 @@
 
 from detect_and_track_traffic import Traffic_Detection
 import argparse
+import cviz
 import time
 import sys
 import os
@@ -34,6 +35,8 @@ if __name__ == '__main__':
 		sys.exit(f"Width '{width}' out of range")
 	if freq < 2 or freq > 20:
 		sys.exit(f"Detection frequency '{freq}' not supported")
+	if not cviz.valid_vidtyp(in_vid):
+		sys.exit(f"Not a valid video extension, '{in_vid}'")
 	if out_vid and os.path.isfile(out_vid):
 		print(f"Warning: will be over-writing output video '{out_vid}'")
 		time.sleep(3.0)

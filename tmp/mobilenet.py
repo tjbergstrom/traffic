@@ -25,9 +25,6 @@ class Mnet:
 			"car" 		: (255, 0, 0),
 			"bus" 		: (225, 100, 0),
 			"motorbike" : (125, 255, 0),
-			"truck"		: (200, 150, 0),
-			"stop sign"	: (0, 50, 100),
-			"traffic light" : (0, 100, 255)
 		}
 
 

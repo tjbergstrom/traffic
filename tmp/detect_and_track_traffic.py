@@ -9,6 +9,7 @@ from trackable_object import Trackable_Object
 from videostream import Video_Thread
 from mobilenet import Mnet
 import numpy as np
+import cviz
 import dlib
 import time
 import cv2
@@ -28,6 +29,7 @@ class Traffic_Detection:
 		self.ct = Centroid_Tracker(8, 32)
 		self.w = 0
 		self.h = 0
+		self.statuses = {}
 
 
 	def detect(self, frame, rgb, v_only=True):
@@ -68,7 +70,8 @@ class Traffic_Detection:
 		return boxs
 
 
-	def traffic_detections(self, frame, rgb):
+	def traffic_detections(self, frame):
+		rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 		boxs = []
 		if self.frame_count % self.detect_freq == 0:
 			self.detect(frame, rgb)
@@ -99,23 +102,37 @@ class Traffic_Detection:
 
 
 	def read_video(self, vid_path, output):
-		self.w, self.h, frames = Video_Thread.vid_dims(vid_path, self.resize_width)
-		vs = Video_Thread(vid_path, frames).start()
+		self.w, self.h = cviz.vid_dimz(vid_path, self.resize_width)
+		vs = Video_Thread(vid_path).start()
+		self.set_status(vs.frames())
 		if output:
-			writer = vs.vid_writer(output, self.w, self.h)
+			writer = cviz.vid_writer(output, self.w, self.h, vs.fps())
 		while True:
 			frame = vs.read()
 			if frame is None:
 				break
 			if self.resize_width:
-				frame = vs.resize(frame, width=self.resize_width)
-			rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-			frame = self.traffic_detections(frame, rgb)
-			self.frame_count += 1
+				frame = cviz.resize(frame, width=self.resize_width)
+			frame = self.traffic_detections(frame)
 			if writer:
 				writer.write(frame)
-				vs.status(self.frame_count)
+				self.status()
+			self.frame_count += 1
 		vs.release()
+
+
+	def set_status(self, frames):
+		self.statuses = {
+			int(frames*0.0)  :  "0% complete",
+			int(frames*0.25) : "25% complete",
+			int(frames*0.50) : "50% complete",
+			int(frames*0.75) : "75% complete",
+		}
+
+
+	def status(self):
+		if self.frame_count in self.statuses:
+			print(self.statuses.get(self.frame_count))
 
 
 
