@@ -71,5 +71,14 @@ def vid_fps(src):
 	return fps
 
 
+def set_pos(vs, start_frame):
+	vs.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+	while vs.get(cv2.CAP_PROP_POS_FRAMES) < start_frame:
+		check, frame = vs.read()
+		if not check or frame is None:
+		    break
+	return vs
+
+
 
 ##

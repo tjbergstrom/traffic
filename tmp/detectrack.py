@@ -109,7 +109,7 @@ def read_video(proc_num):
 	if not (proc_num == 0):
 		start_frame -= 1
 		TD.jump_unit += 1
-	vs.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+	vs = cviz.set_pos(vs, start_frame)
 	writer = cviz.vid_writer(f"mpt/tmp_{proc_num}.avi", w, h, fps)
 	while TD.frame_count < TD.jump_unit:
 		check, frame = vs.read()
@@ -123,7 +123,11 @@ def read_video(proc_num):
 			continue
 		if (proc_num == processes // 2) and TD.frame_count == (jump_unit // 2):
 			verbose(f"50% complete")
-		cv2.putText(frame, f"{(jump_unit * proc_num) + TD.frame_count}", (w-25,10), 0, 0.35, (20,255,10), 1)
+		vs_pos = (jump_unit * proc_num) + TD.frame_count
+		if not (proc_num == 0):
+			vs_pos -= 1
+		cv2.putText(frame, f"{vs_pos}", (w-25,10), 0, 0.35, (20,255,10), 1)
+		cv2.putText(frame, f"{int(vs.get(cv2.CAP_PROP_POS_FRAMES))}", (w-25,20), 0, 0.35, (20,255,10), 1)
 		writer.write(frame)
 	vs.release()
 	writer.release()
