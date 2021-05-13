@@ -46,15 +46,14 @@ def valid_vidtyp(in_vid):
 	return 0
 
 
-
-def frame_cnt(src):
+def frame_cnt(src, manual=False):
 	frames = 0
 	cap = cv2.VideoCapture(src)
 	try:
 		frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 	except:
 		frames = 0
-	if frames <= 0:
+	if frames <= 0 or manual:
 		frames = 0
 		while True:
 			check, frame = cap.read()
@@ -63,6 +62,13 @@ def frame_cnt(src):
 			frames += 1
 	cap.release()
 	return frames
+
+
+def vid_fps(src):
+	cap = cv2.VideoCapture(src)
+	fps = int(cap.get(cv2.CAP_PROP_FPS))
+	cap.release()
+	return fps
 
 
 
