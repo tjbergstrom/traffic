@@ -103,7 +103,6 @@ class Traffic_Detection:
 
 
 def read_video(proc_num):
-	verbose(f"Process: {proc_num}, start frame {jump_unit*proc_num}/{frames}")
 	TD = Traffic_Detection(w, h, jump_unit, freq)
 	vs = cv2.VideoCapture(in_vid)
 	start_frame = jump_unit * proc_num
@@ -111,7 +110,7 @@ def read_video(proc_num):
 		start_frame -= 1
 		TD.jump_unit += 1
 	vs.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
-	writer = cv2.VideoWriter(f"mpt/tmp_{proc_num}.avi", fourcc, fps, (w, h), True)
+	writer = cviz.vid_writer(f"mpt/tmp_{proc_num}.avi", w, h, fps)
 	while TD.frame_count < TD.jump_unit:
 		check, frame = vs.read()
 		if not check or frame is None:
@@ -119,20 +118,18 @@ def read_video(proc_num):
 		if resize_w:
 			frame = cviz.resize(frame, width=w)
 		frame = TD.traffic_detections(frame)
-		cv2.putText(frame, f"{(jump_unit * proc_num) + TD.frame_count}", (10,10), 0, 0.35, (20,255,10), 1)
 		TD.frame_count += 1
-		if TD.frame_count == (jump_unit // 2):
-			verbose(f"Process: {proc_num}, 50% complete")
 		if not (proc_num == 0) and TD.frame_count == 1:
 			continue
+		if (proc_num == processes // 2) and TD.frame_count == (jump_unit // 2):
+			verbose(f"50% complete")
+		cv2.putText(frame, f"{(jump_unit * proc_num) + TD.frame_count}", (w-25,10), 0, 0.35, (20,255,10), 1)
 		writer.write(frame)
 	vs.release()
 	writer.release()
-	verbose(f"Process: {proc_num}, 100% complete")
 
 
 def recombine_frames():
-	verbose("Recombining frames...")
 	tmp_files = [f"mpt/tmp_{i}.avi" for i in range(processes)]
 	f = open("tmps.txt", "w")
 	for i in tmp_files:
@@ -148,40 +145,6 @@ def multi_process():
 	p = mp.Pool(processes)
 	p.map(read_video, range(processes))
 	recombine_frames()
-
-
-def checkargs(in_vid, out_vid, w, freq, frames, processes):
-	if not os.path.isfile(in_vid):
-		sys.exit(f"'{in_vid}' is not a filepath")
-	if not os.path.isdir(os.path.dirname(out_vid)):
-		sys.exit(f"Cannot save an output video to '{out_vid}'")
-	if not os.path.basename(out_vid):
-		sys.exit(f"No output file specified '{out_vid}'")
-	if w < 360 or w > 1800:
-		sys.exit(f"Width '{w}' out of range")
-	if freq < 2 or freq > 40:
-		sys.exit(f"Detection frequency '{freq}' not supported")
-	if not cviz.valid_vidtyp(in_vid):
-		sys.exit(f"Not a valid video extension, '{in_vid}'")
-	if processes == 0:
-		sys.exit(f"No processors found")
-	if frames < processes:
-		sys.exit(f"Video is too short")
-	if frames <= 0:
-		sys.exit(f"Error counting video frames")
-	if os.path.isfile(out_vid):
-		print(f"Warning: will be over-writing output video '{out_vid}'")
-		time.sleep(1.0)
-		os.remove(out_vid)
-
-
-def check_out(out_vid, frames):
-	if os.path.isfile(out_vid):
-		if frames != cviz.frame_cnt(out_vid, manual=True):
-			sys.exit(f"Output video not correctly saved")
-	else:
-		sys.exit(f"Output video not saved")
-	verbose(f"Output video successfully saved")
 
 
 def verbose(msg):
@@ -204,21 +167,47 @@ if __name__ == "__main__":
 	in_vid = args["input"]
 	freq = args["freq"]
 
+	if not os.path.isfile(in_vid):
+		sys.exit(f"'{in_vid}' is not a filepath")
+	if not os.path.isdir(os.path.dirname(out_vid)):
+		sys.exit(f"Cannot save an output video to '{out_vid}'")
+	if not os.path.basename(out_vid):
+		sys.exit(f"No output file specified '{out_vid}'")
+	if not cviz.valid_vidtyp(in_vid):
+		sys.exit(f"Not a valid video type, '{in_vid}'")
+	if resize_w and (resize_w < 360 or resize_w > 1800):
+		sys.exit(f"Width '{w}' out of range")
+	if freq < 2 or freq > 40:
+		sys.exit(f"Detection frequency '{freq}' not supported")
+
 	w, h = cviz.vid_dimz(in_vid, resize_w)
 	frames = cviz.frame_cnt(in_vid)
 	fps = cviz.vid_fps(in_vid)
-	fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
 	processes = min(mp.cpu_count(), frames)
 	jump_unit = math.ceil(frames / processes)
-	checkargs(in_vid, out_vid, w, freq, frames, processes)
-	MN = Mnet()
+	MN = Mnet() # check later, with more processors should each process get its own net? whats faster?
 
+	if processes == 0:
+		sys.exit(f"No processors found")
+	if frames <= 0:
+		sys.exit(f"Error with video frames count")
+	if os.path.isfile(out_vid):
+		os.remove(out_vid)
+	verbose(f"Processing {frames} frames on {processes} processors")
 	os.system("rm -f -r mpt")
 	os.system("mkdir -p mpt")
+
 	multi_process()
 
-	check_out(out_vid, frames)
-	print(f"Finished processing video ({time.time()-start:.2f} seconds)")
+	verbose(f"Finished processing video ({time.time()-start:.2f} seconds)")
+	if os.path.isfile(out_vid):
+		if frames != cviz.frame_cnt(out_vid, manual=True):
+			sys.exit(f"Output video not correctly saved (frame count off)")
+		if fps != cviz.vid_fps(out_vid):
+			sys.exit(f"Output video not correctly saved (fps off)")
+	else:
+		sys.exit(f"Output video not saved")
+	verbose(f"Output video successfully saved")
 
 
 
