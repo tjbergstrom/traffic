@@ -127,7 +127,7 @@ def read_video(proc_num):
 		if not (proc_num == 0):
 			vs_pos -= 1
 		cv2.putText(frame, f"{vs_pos}", (w-25,10), 0, 0.35, (20,255,10), 1)
-		cv2.putText(frame, f"{int(vs.get(cv2.CAP_PROP_POS_FRAMES))}", (w-25,20), 0, 0.35, (20,255,10), 1)
+		assert vs_pos == int(vs.get(cv2.CAP_PROP_POS_FRAMES)), "Frame position is off"
 		writer.write(frame)
 	vs.release()
 	writer.release()
@@ -135,10 +135,9 @@ def read_video(proc_num):
 
 def recombine_frames():
 	tmp_files = [f"mpt/tmp_{i}.avi" for i in range(processes)]
-	f = open("tmps.txt", "w")
-	for i in tmp_files:
-		f.write(f"file {i} \n")
-	f.close()
+	with open("tmps.txt", "w") as f:
+		for i in tmp_files:
+			f.write(f"file {i} \n")
 	cmd = f"ffmpeg -y -loglevel error -f concat -safe 0 -i tmps.txt -vcodec copy {out_vid}"
 	sp.Popen(cmd, shell=True).wait()
 	os.remove("tmps.txt")
@@ -146,6 +145,8 @@ def recombine_frames():
 
 
 def multi_process():
+	os.system("rm -f -r mpt")
+	os.system("mkdir -p mpt")
 	p = mp.Pool(processes)
 	p.map(read_video, range(processes))
 	recombine_frames()
@@ -183,27 +184,24 @@ if __name__ == "__main__":
 		sys.exit(f"Width '{w}' out of range")
 	if freq < 2 or freq > 40:
 		sys.exit(f"Detection frequency '{freq}' not supported")
+	if os.path.isfile(out_vid):
+		os.remove(out_vid)
 
 	w, h = cviz.vid_dimz(in_vid, resize_w)
 	frames = cviz.frame_cnt(in_vid)
 	fps = cviz.vid_fps(in_vid)
 	processes = min(mp.cpu_count(), frames)
 	jump_unit = math.ceil(frames / processes)
-	MN = Mnet() # check later, with more processors should each process get its own net? whats faster?
+	MN = Mnet()
 
 	if processes == 0:
 		sys.exit(f"No processors found")
 	if frames <= 0:
 		sys.exit(f"Error with video frames count")
-	if os.path.isfile(out_vid):
-		os.remove(out_vid)
-	verbose(f"Processing {frames} frames on {processes} processors")
-	os.system("rm -f -r mpt")
-	os.system("mkdir -p mpt")
 
+	verbose(f"Processing {frames} frames on {processes} processors")
 	multi_process()
 
-	verbose(f"Finished processing video ({time.time()-start:.2f} seconds)")
 	if os.path.isfile(out_vid):
 		if frames != cviz.frame_cnt(out_vid, manual=True):
 			sys.exit(f"Output video not correctly saved (frame count off)")
@@ -212,6 +210,7 @@ if __name__ == "__main__":
 	else:
 		sys.exit(f"Output video not saved")
 	verbose(f"Output video successfully saved")
+	verbose(f"Finished processing video ({time.time()-start:.2f} seconds)")
 
 
 
