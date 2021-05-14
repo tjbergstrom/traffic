@@ -97,7 +97,6 @@ class Traffic_Detection:
 			frame = cv2.addWeighted(overlay, 0.4, frame, 0.6, 0, 0)
 			cv2.circle(frame, (c[0], c[1]), (radius), to.color, 1)
 			cv2.putText(frame, to.label, (start_x+10,start_y+15), 0, 0.5, to.color, 2)
-			cv2.putText(frame, f"{objectID}", (c[0], c[1]), 0, 1.1, to.color, 3)
 			cv2.putText(frame, f"({c[0]},{c[1]})", (c[0]-radius//2, c[1]), 0, 0.35, (255,255,255), 1)
 		return frame
 
@@ -106,9 +105,11 @@ def read_video(proc_num):
 	TD = Traffic_Detection(w, h, jump_unit, freq)
 	vs = cv2.VideoCapture(in_vid)
 	start_frame = jump_unit * proc_num
-	if not (proc_num == 0):
+	first_block = (proc_num == 0)
+	if not first_block:
 		start_frame -= 1
 		TD.jump_unit += 1
+	vs_pos = start_frame
 	vs = cviz.set_pos(vs, start_frame)
 	writer = cviz.vid_writer(f"mpt/tmp_{proc_num}.avi", w, h, fps)
 	while TD.frame_count < TD.jump_unit:
@@ -116,17 +117,15 @@ def read_video(proc_num):
 		if not check or frame is None:
 		    break
 		if resize_w:
-			frame = cviz.resize(frame, width=w)
+			frame = cviz.resize(frame, width=TD.w)
 		frame = TD.traffic_detections(frame)
 		TD.frame_count += 1
-		if not (proc_num == 0) and TD.frame_count == 1:
+		vs_pos += 1
+		if not first_block and TD.frame_count == 1:
 			continue
-		if (proc_num == processes // 2) and TD.frame_count == (jump_unit // 2):
+		if (proc_num == processes // 2) and (TD.frame_count == TD.jump_unit // 2):
 			verbose(f"50% complete")
-		vs_pos = (jump_unit * proc_num) + TD.frame_count
-		if not (proc_num == 0):
-			vs_pos -= 1
-		cv2.putText(frame, f"{vs_pos}", (w-25,10), 0, 0.35, (20,255,10), 1)
+		cv2.putText(frame, f"{vs_pos}", (10,25), 0, 0.35, (20,255,10), 1)
 		assert vs_pos == int(vs.get(cv2.CAP_PROP_POS_FRAMES)), "Frame position is off"
 		writer.write(frame)
 	vs.release()
@@ -160,11 +159,11 @@ def verbose(msg):
 if __name__ == "__main__":
 	start = time.time()
 	ap = argparse.ArgumentParser()
-	ap.add_argument("-i", "--input", required=True)
-	ap.add_argument("-o", "--output", required=True)
-	ap.add_argument("-w", "--width", type=int, default=None)
-	ap.add_argument("-v", "--verbose", type=bool, default=False)
+	ap.add_argument("-i", "--input", required=True, help="input video filepath")
+	ap.add_argument("-o", "--output", required=True, help="save output video filepath")
+	ap.add_argument("-w", "--width", type=int, default=None, help="resize video frame width")
 	ap.add_argument("-f", "--freq", type=int, default=5, help="frequency of detections")
+	ap.add_argument("-v", "--verbose", type=bool, default=False)
 	args = vars(ap.parse_args())
 
 	resize_w = args["width"]
@@ -179,19 +178,17 @@ if __name__ == "__main__":
 	if not os.path.basename(out_vid):
 		sys.exit(f"No output file specified '{out_vid}'")
 	if not cviz.valid_vidtyp(in_vid):
-		sys.exit(f"Not a valid video type, '{in_vid}'")
+		sys.exit(f"Not a valid input video type, '{in_vid}'")
 	if resize_w and (resize_w < 360 or resize_w > 1800):
-		sys.exit(f"Width '{w}' out of range")
+		sys.exit(f"Width '{resize_w}' out of range")
 	if freq < 2 or freq > 40:
 		sys.exit(f"Detection frequency '{freq}' not supported")
 	if os.path.isfile(out_vid):
 		os.remove(out_vid)
-	#if os.path.splitext(os.path.basename(in_vid))[1] == '.mjpeg':
-		#in_vid = cviz.avi_conv(in_vid)
 
 	w, h = cviz.vid_dimz(in_vid, resize_w)
-	frames = cviz.frame_cnt(in_vid)
 	fps = cviz.vid_fps(in_vid)
+	frames = cviz.frame_cnt(in_vid)
 	processes = min(mp.cpu_count(), frames)
 	jump_unit = math.ceil(frames / processes)
 	MN = Mnet()
