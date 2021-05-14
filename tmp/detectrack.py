@@ -186,6 +186,8 @@ if __name__ == "__main__":
 		sys.exit(f"Detection frequency '{freq}' not supported")
 	if os.path.isfile(out_vid):
 		os.remove(out_vid)
+	#if os.path.splitext(os.path.basename(in_vid))[1] == '.mjpeg':
+		#in_vid = cviz.avi_conv(in_vid)
 
 	w, h = cviz.vid_dimz(in_vid, resize_w)
 	frames = cviz.frame_cnt(in_vid)
@@ -203,13 +205,12 @@ if __name__ == "__main__":
 	multi_process()
 
 	if os.path.isfile(out_vid):
-		if frames != cviz.frame_cnt(out_vid, manual=True):
+		if frames != cviz.frame_cnt(out_vid):
 			sys.exit(f"Output video not correctly saved (frame count off)")
 		if fps != cviz.vid_fps(out_vid):
 			sys.exit(f"Output video not correctly saved (fps off)")
 	else:
 		sys.exit(f"Output video not saved")
-	verbose(f"Output video successfully saved")
 	verbose(f"Finished processing video ({time.time()-start:.2f} seconds)")
 
 

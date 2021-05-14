@@ -40,19 +40,15 @@ def vid_writer(output, w, h, fps):
 
 def valid_vidtyp(in_vid):
 	exts = set(['.avi', '.mp4', '.mjpeg',])
-	ext = os.path.splitext(in_vid)[1]
+	ext = os.path.splitext(os.path.basename(in_vid))[1]
 	if ext in exts:
 		return 1
 	return 0
 
 
 def frame_cnt(src, manual=False):
-	frames = 0
 	cap = cv2.VideoCapture(src)
-	try:
-		frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-	except:
-		frames = 0
+	frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 	if frames <= 0 or manual:
 		frames = 0
 		while True:
@@ -78,6 +74,21 @@ def set_pos(vs, start_frame):
 		if not check or frame is None:
 		    break
 	return vs
+
+
+def avi_conv(src):
+	path, ext = os.path.splitext(src)
+	cap = cv2.VideoCapture(src)
+	w, h = vid_dimz(src)
+	writer = vid_writer(f"{path}.avi", w, h, int(cap.get(cv2.CAP_PROP_FPS)))
+	while True:
+		check, frame = cap.read()
+		if not check or frame is None:
+		    break
+		writer.write(frame)
+	cap.release()
+	writer.release()
+	return f"{path}.avi"
 
 
 
