@@ -1,6 +1,6 @@
 # videostream.py
 # November 2020
-# Starts a thread for reading video and adds frames to a Queue for faster processing.
+# Start a thread for reading video and add frames to a Queue for faster processing.
 
 
 from threading import Thread
@@ -14,8 +14,8 @@ class Video_Thread:
 	def __init__(self, src):
 		self.stream = cv2.VideoCapture(src)
 		self.que = Queue(maxsize=256)
-		self.quit = 0
 		self.src = src
+		self.quit = 0
 		self.thread = Thread(
 			target=self.update,
 			args=(),
@@ -66,6 +66,10 @@ class Video_Thread:
 		self.stream.release()
 
 
+	def fps(self):
+		return self.stream.get(cv2.CAP_PROP_FPS)
+
+
 	def frames(self):
 		frames = int(self.stream.get(cv2.CAP_PROP_FRAME_COUNT))
 		if frames <= 0:
@@ -73,8 +77,8 @@ class Video_Thread:
 		return frames
 
 
-	def fps(self):
-		return self.stream.get(cv2.CAP_PROP_FPS)
+	def set_pos(self, start_frame):
+		return cviz.set_pos(self.stream, start_frame)
 
 
 

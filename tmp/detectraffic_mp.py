@@ -22,6 +22,7 @@ from detectrack import Traffic_Detection
 
 
 def read_video_mp(proc_num):
+	w, h = cviz.vid_dimz(in_vid, resize_w)
 	TD = Traffic_Detection(w, h, freq, jump_unit)
 	vs = cv2.VideoCapture(in_vid)
 	start_frame = jump_unit * proc_num
@@ -31,13 +32,13 @@ def read_video_mp(proc_num):
 		TD.jump_unit += 1
 	vs_pos = start_frame
 	vs = cviz.set_pos(vs, start_frame)
-	writer = cviz.vid_writer(f"mpt/tmp_{proc_num}.avi", w, h, fps)
+	writer = cviz.vid_writer(f"mpt/tmp_{proc_num}.avi", w, h, cviz.vid_fps(in_vid))
 	while TD.frame_count < TD.jump_unit:
 		check, frame = vs.read()
 		if not check or frame is None:
 		    break
 		if resize_w:
-			frame = cviz.resize(frame, width=TD.w)
+			frame = cviz.resize(frame, width=w)
 		frame = TD.traffic_detections(frame)
 		TD.frame_count += 1
 		vs_pos += 1
@@ -52,7 +53,13 @@ def read_video_mp(proc_num):
 	writer.release()
 
 
-def recombine_frames():
+def multi_process_vid():
+	os.system("rm -f -r mpt")
+	os.system("mkdir -p mpt")
+	# Multi-process the blocks of frames
+	p = mp.Pool(processes)
+	p.map(read_video_mp, range(processes))
+	# Recombine the blocks of frames
 	tmp_files = [f"mpt/tmp_{i}.avi" for i in range(processes)]
 	with open("tmps.txt", "w") as f:
 		for i in tmp_files:
@@ -61,14 +68,6 @@ def recombine_frames():
 	sp.Popen(cmd, shell=True).wait()
 	os.remove("tmps.txt")
 	os.system("rm -f -r mpt")
-
-
-def multi_process():
-	os.system("rm -f -r mpt")
-	os.system("mkdir -p mpt")
-	p = mp.Pool(processes)
-	p.map(read_video_mp, range(processes))
-	recombine_frames()
 
 
 if __name__ == "__main__":
@@ -100,8 +99,6 @@ if __name__ == "__main__":
 	if os.path.isfile(out_vid):
 		os.remove(out_vid)
 
-	w, h = cviz.vid_dimz(in_vid, resize_w)
-	fps = cviz.vid_fps(in_vid)
 	frames = cviz.frame_cnt(in_vid)
 	processes = min(mp.cpu_count(), frames)
 	jump_unit = math.ceil(frames / processes)
@@ -112,12 +109,12 @@ if __name__ == "__main__":
 		sys.exit(f"Error with video frames count")
 
 	print(f"Processing {frames} frames on {processes} processors... ")
-	multi_process()
+	multi_process_vid()
 
 	if os.path.isfile(out_vid):
-		if not frames == cviz.frame_cnt(out_vid):
+		if not cviz.frame_cnt(in_vid) == cviz.frame_cnt(out_vid):
 			print("Saved incorrectly, frame count off")
-		if not fps == cviz.vid_fps(out_vid):
+		if not cviz.vid_fps(in_vid) == cviz.vid_fps(out_vid):
 			print("Saved incorrectly, fps is off")
 	else:
 		sys.exit(f"Output video not saved")
