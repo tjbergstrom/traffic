@@ -1,91 +1,78 @@
+# main.py
+# May 2021
+#
+# $ python3 main.py -i vid_inputs/vid0.mp4 -o vid_outputs/0.avi
 
 
-
-
-
-from centroid_tracker import Centroid_Tracker
-from trackable_object import Trackable_Object
-from mobilenet import Mnet
-import numpy as np
-import dlib
+from detectraffic import Traffic_Detection
+from videostream import Video_Thread
+import argparse
+import cviz
+import time
 import cv2
+import sys
+import os
 
 
-class Traffic_Detection:
-	def __init__(self, w, h, freq=5, jump_unit=None):
-		self.w = w
-		self.h = h
-		self.MN = Mnet()
-		self.trackers = []
-		self.frame_count = 0
-		self.detect_freq = freq
-		self.jump_unit = jump_unit
-		self.trackable_objects = {}
-		self.ct = Centroid_Tracker(8, 64)
+def read_video(vid_path, output, resize_w, freq):
+	w, h = cviz.vid_dimz(vid_path, resize_w)
+	TD = Traffic_Detection(w, h, freq)
+	vs = Video_Thread(vid_path).start()
+	writer = cviz.vid_writer(output, w, h, vs.fps())
+	frames = vs.frames()
+	print(f"Processing {frames} frames... ")
+	while True:
+		frame = vs.read()
+		if frame is None:
+			break
+		if resize_w:
+			frame = cviz.resize(frame, width=w)
+		frame = TD.traffic_detections(frame, obj_id=True)
+		cv2.putText(frame, f"{TD.frame_count}", (10,25), 0, 0.35, (20,255,10), 1)
+		writer.write(frame)
+		TD.frame_count += 1
+		if TD.frame_count == frames // 2:
+			print(f"50% complete")
+	vs.release()
+	writer.release()
 
 
-	def mobilenet_detect(self, frame, rgb, v_only=True):
-		self.trackers = []
-		blob = cv2.dnn.blobFromImage(
-			cv2.resize(frame, (300, 300)),
-			0.007843, (300, 300), 127.5)
-		self.MN.net.setInput(blob)
-		detections = self.MN.net.forward()
-		for i in np.arange(0, detections.shape[2]):
-			confidence = detections[0, 0, i, 2]
-			if confidence < 0.4:
-				continue
-			class_idx = int(detections[0, 0, i, 1])
-			if class_idx not in self.MN.traffic_idxs:
-				continue
-			if v_only and class_idx not in self.MN.vehicles_only:
-				continue
-			if class_idx not in self.MN.vehicles_only and confidence < 0.6:
-				continue
-			box = detections[0, 0, i, 3:7] * np.array([self.w, self.h, self.w, self.h])
-			(start_x, start_y, end_x, end_y) = box.astype("int")
-			tracker = dlib.correlation_tracker()
-			tracker.start_track(rgb, dlib.rectangle(start_x, start_y, end_x, end_y))
-			self.trackers.append((tracker, self.MN.all_classes[class_idx]))
+if __name__ == '__main__':
+	start = time.time()
+	ap = argparse.ArgumentParser()
+	ap.add_argument("-i", "--input", required=True, help="input video filepath")
+	ap.add_argument("-o", "--output", required=True, help="save output video filepath")
+	ap.add_argument("-w", "--width", type=int, default=None, help="resize video frame width")
+	ap.add_argument("-f", "--freq", type=int, default=5, help="detection frequency, default is every 5 frames")
+	args = vars(ap.parse_args())
 
+	resize_w = args["width"]
+	out_vid = args["output"]
+	in_vid = args["input"]
+	freq = args["freq"]
 
-	def track(self, tracker, label, boxs, rgb):
-		tracker.update(rgb)
-		pos = tracker.get_position()
-		start_x, start_y = int(pos.left()), int(pos.top())
-		end_x, end_y = int(pos.right()), int(pos.bottom())
-		boxs.append((start_x, start_y, end_x, end_y, label))
-		return boxs
+	if not os.path.isfile(in_vid):
+		sys.exit(f"'{in_vid}' is not a filepath")
+	if not os.path.isdir(os.path.dirname(out_vid)):
+		sys.exit(f"Cannot save an output video to '{out_vid}'")
+	if not os.path.basename(out_vid):
+		sys.exit(f"No output file specified '{out_vid}'")
+	if not cviz.valid_vidtyp(in_vid):
+		sys.exit(f"Not a valid input video type, '{in_vid}'")
+	if resize_w and (resize_w < 180 or resize_w > 1800):
+		sys.exit(f"Width '{resize_w}' out of range")
+	if freq < 2 or freq > 20:
+		sys.exit(f"Detection frequency '{freq}' not supported")
+	if os.path.isfile(out_vid):
+		os.remove(out_vid)
 
+	read_video(in_vid, out_vid, resize_w, freq)
 
-	def traffic_detections(self, frame):
-		rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-		boxs = []
-		if self.frame_count % self.detect_freq == 0:
-			self.mobilenet_detect(frame, rgb)
-		else:
-			for tracker, label in self.trackers:
-				boxs = self.track(tracker, label, boxs, rgb)
-		objects = self.ct.update(boxs)
-		for (objectID, (c, box, label)) in objects.items():
-			to = self.trackable_objects.get(objectID, None)
-			if to is None:
-				to = Trackable_Object(objectID, c)
-				to.label = label
-				to.color = self.MN.colors[to.label]
-			else:
-				to.centroids.append(c)
-			self.trackable_objects[objectID] = to
-			(start_x, start_y, end_x, end_y) = box
-			cv2.rectangle(frame, (start_x, start_y), (end_x, end_y), to.color, 1)
-			overlay = frame.copy()
-			radius = min( (end_x - start_x) // 2, (end_y - start_y) // 2 )
-			cv2.circle(overlay, (c[0], c[1]), (radius), to.color, -1)
-			frame = cv2.addWeighted(overlay, 0.4, frame, 0.6, 0, 0)
-			cv2.circle(frame, (c[0], c[1]), (radius), to.color, 1)
-			cv2.putText(frame, to.label, (start_x+10,start_y+15), 0, 0.5, to.color, 2)
-			cv2.putText(frame, f"({c[0]},{c[1]})", (c[0]-radius//2, c[1]), 0, 0.35, (255,255,255), 1)
-		return frame
+	if os.path.isfile(out_vid):
+		print(f"Output video successfully saved")
+	else:
+		sys.exit(f"Output video not saved")
+	print(f"Finished processing video ({time.time()-start:.2f} seconds)")
 
 
 
