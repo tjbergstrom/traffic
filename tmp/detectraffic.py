@@ -1,10 +1,14 @@
-# main.py
+# detectraffic.py
 # May 2021
+# Traffic detection with object tracking to increase efficiency.
 #
-# $ python3 main.py -i vid_inputs/vid0.mp4 -o vid_outputs/0.avi
+# Pass every n-th frame to the object detector to get new vehicle etc detections,
+# Use object tracking on the frames in between to keep track of only their locations.
+#
+# $ python3 detectraffic.py -i vid_inputs/vid0.mp4 -o vid_outputs/0.avi -w 500 -f 10
 
 
-from detectraffic import Traffic_Detection
+from detectrack import Traffic_Detection
 from videostream import Video_Thread
 import argparse
 import cviz
@@ -69,7 +73,10 @@ if __name__ == '__main__':
 	read_video(in_vid, out_vid, resize_w, freq)
 
 	if os.path.isfile(out_vid):
-		print(f"Output video successfully saved")
+		if not cviz.frame_cnt(in_vid) == cviz.frame_cnt(out_vid):
+			sys.exit("Saved incorrectly, frame count off")
+		if not cviz.frame_cnt(in_vid) == cviz.frame_cnt(out_vid):
+			sys.exit("Saved incorrectly, fps is off")
 	else:
 		sys.exit(f"Output video not saved")
 	print(f"Finished processing video ({time.time()-start:.2f} seconds)")

@@ -1,6 +1,7 @@
-
-
-
+# detectrack.py
+# May 2020
+# Take input video frames, make detections on the frames, track detected objects across frames,
+# Draw the detections on the frames, and return the processed output frames.
 
 
 from centroid_tracker import Centroid_Tracker
@@ -58,7 +59,7 @@ class Traffic_Detection:
 		return boxs
 
 
-	def traffic_detections(self, frame):
+	def traffic_detections(self, frame, obj_id=False):
 		rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 		boxs = []
 		if self.frame_count % self.detect_freq == 0:
@@ -83,6 +84,8 @@ class Traffic_Detection:
 			cv2.circle(overlay, (c[0], c[1]), (radius), to.color, -1)
 			frame = cv2.addWeighted(overlay, 0.4, frame, 0.6, 0, 0)
 			cv2.circle(frame, (c[0], c[1]), (radius), to.color, 1)
+			if obj_id:
+				cv2.putText(frame, f"{objectID}", (c[0], c[1]), 0, 1.5, to.color, 3)
 			cv2.putText(frame, to.label, (start_x+10,start_y+15), 0, 0.5, to.color, 2)
 			cv2.putText(frame, f"({c[0]},{c[1]})", (c[0]-radius//2, c[1]), 0, 0.35, (255,255,255), 1)
 		return frame
