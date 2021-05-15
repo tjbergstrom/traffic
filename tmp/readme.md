@@ -1,11 +1,13 @@
 
 
-- main.py
-	- The main script to run the traffic detection processing.
-	- Run with defaults:
-		- python3 main.py -i vid_inputs/vid0.mp4 -o vid_outputs/0.avi
-- detect_and_track_traffic.py
-	- Read video, detect and track vehicles, save output video.
+- detectraffic.py
+	- Original traffic detection with object tracking, process and save a video.
+		- python3 detectraffic.py -i vid_inputs/vid0.mp4 -o vid_outputs/0.avi
+- detectraffic_mp.py
+	- Multi-processed traffic detection with object tracking, process and save a video.
+		- python3 detectraffic_mp.py -i vid_inputs/vid0.mp4 -o vid_outputs/0.avi
+- detectrack.py
+	- Input video frames, detect and track objects across frames, draw detections on output frames.
 - centeroid_tracker.py and trackable_object.py
 	- For object tracking.
 - cviz.py
