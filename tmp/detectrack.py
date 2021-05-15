@@ -1,5 +1,5 @@
 # detectrack.py
-# May 2020
+# May 2021
 # Take input video frames, make detections on the frames, track detected objects across frames,
 # Draw the detections on the frames, and return the processed output frames.
 
@@ -13,14 +13,13 @@ import cv2
 
 
 class Traffic_Detection:
-	def __init__(self, w, h, freq=5, jump_unit=None):
+	def __init__(self, w, h, freq=5):
 		self.w = w
 		self.h = h
 		self.MN = Mnet()
 		self.trackers = []
 		self.frame_count = 0
 		self.detect_freq = freq
-		self.jump_unit = jump_unit
 		self.trackable_objects = {}
 		self.ct = Centroid_Tracker(8, 64)
 

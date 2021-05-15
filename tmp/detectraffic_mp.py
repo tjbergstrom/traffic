@@ -23,17 +23,18 @@ from detectrack import Traffic_Detection
 
 def read_video_mp(proc_num):
 	w, h = cviz.vid_dimz(in_vid, resize_w)
-	TD = Traffic_Detection(w, h, freq, jump_unit)
+	TD = Traffic_Detection(w, h, freq)
 	vs = cv2.VideoCapture(in_vid)
+	frame_block = jump_unit
 	start_frame = jump_unit * proc_num
 	first_block = (proc_num == 0)
 	if not first_block:
 		start_frame -= 1
-		TD.jump_unit += 1
+		frame_block += 1
 	vs_pos = start_frame
 	vs = cviz.set_pos(vs, start_frame)
 	writer = cviz.vid_writer(f"mpt/tmp_{proc_num}.avi", w, h, cviz.vid_fps(in_vid))
-	while TD.frame_count < TD.jump_unit:
+	while TD.frame_count < frame_block:
 		check, frame = vs.read()
 		if not check or frame is None:
 		    break
@@ -47,7 +48,7 @@ def read_video_mp(proc_num):
 		cv2.putText(frame, f"{vs_pos-1}", (10,25), 0, 0.35, (20,255,10), 1)
 		writer.write(frame)
 		assert vs_pos == int(vs.get(cv2.CAP_PROP_POS_FRAMES)), "Frame position is off"
-		if (proc_num == processes // 2) and (TD.frame_count == TD.jump_unit // 2):
+		if (proc_num == processes // 2) and (TD.frame_count == frame_block // 2):
 			print(f"50% complete")
 	vs.release()
 	writer.release()
