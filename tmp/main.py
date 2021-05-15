@@ -4,15 +4,41 @@
 # $ python3 main.py -i vid_inputs/vid0.mp4 -o vid_outputs/0.avi
 
 
-from detect_and_track_traffic import Traffic_Detection
+from detectraffic import Traffic_Detection
+from videostream import Video_Thread
 import argparse
 import cviz
 import time
+import cv2
 import sys
 import os
 
 
+def read_video(vid_path, output, resize_w, freq):
+	w, h = cviz.vid_dimz(vid_path, resize_w)
+	TD = Traffic_Detection(w, h, freq)
+	vs = Video_Thread(vid_path).start()
+	writer = cviz.vid_writer(output, w, h, vs.fps())
+	frames = vs.frames()
+	print(f"Processing {frames} frames... ")
+	while True:
+		frame = vs.read()
+		if frame is None:
+			break
+		if resize_w:
+			frame = cviz.resize(frame, width=w)
+		frame = TD.traffic_detections(frame, obj_id=True)
+		cv2.putText(frame, f"{TD.frame_count}", (10,25), 0, 0.35, (20,255,10), 1)
+		writer.write(frame)
+		TD.frame_count += 1
+		if TD.frame_count == frames // 2:
+			print(f"50% complete")
+	vs.release()
+	writer.release()
+
+
 if __name__ == '__main__':
+	start = time.time()
 	ap = argparse.ArgumentParser()
 	ap.add_argument("-i", "--input", required=True, help="input video filepath")
 	ap.add_argument("-o", "--output", required=True, help="save output video filepath")
@@ -20,9 +46,9 @@ if __name__ == '__main__':
 	ap.add_argument("-f", "--freq", type=int, default=5, help="detection frequency, default is every 5 frames")
 	args = vars(ap.parse_args())
 
-	in_vid = args["input"]
+	resize_w = args["width"]
 	out_vid = args["output"]
-	width = args["width"]
+	in_vid = args["input"]
 	freq = args["freq"]
 
 	if not os.path.isfile(in_vid):
@@ -31,25 +57,22 @@ if __name__ == '__main__':
 		sys.exit(f"Cannot save an output video to '{out_vid}'")
 	if not os.path.basename(out_vid):
 		sys.exit(f"No output file specified '{out_vid}'")
-	if width and (width < 180 or width > 1800):
-		sys.exit(f"Width '{width}' out of range")
+	if not cviz.valid_vidtyp(in_vid):
+		sys.exit(f"Not a valid input video type, '{in_vid}'")
+	if resize_w and (resize_w < 180 or resize_w > 1800):
+		sys.exit(f"Width '{resize_w}' out of range")
 	if freq < 2 or freq > 20:
 		sys.exit(f"Detection frequency '{freq}' not supported")
-	if not cviz.valid_vidtyp(in_vid):
-		sys.exit(f"Not a valid video extension, '{in_vid}'")
-	if out_vid and os.path.isfile(out_vid):
-		print(f"Warning: will be over-writing output video '{out_vid}'")
-		time.sleep(3.0)
+	if os.path.isfile(out_vid):
 		os.remove(out_vid)
 
-	start = time.time()
-	Traffic_Detection(width, freq).read_video(in_vid, out_vid)
-	print(f"Finished processing video ({time.time()-start:.2f} seconds)")
+	read_video(in_vid, out_vid, resize_w, freq)
 
 	if os.path.isfile(out_vid):
 		print(f"Output video successfully saved")
 	else:
 		sys.exit(f"Output video not saved")
+	print(f"Finished processing video ({time.time()-start:.2f} seconds)")
 
 
 
