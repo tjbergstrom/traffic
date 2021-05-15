@@ -44,7 +44,7 @@ def read_video_mp(proc_num):
 		vs_pos += 1
 		if not first_block and TD.frame_count == 1:
 			continue
-		cv2.putText(frame, f"{vs_pos}", (10,25), 0, 0.35, (20,255,10), 1)
+		cv2.putText(frame, f"{vs_pos-1}", (10,25), 0, 0.35, (20,255,10), 1)
 		writer.write(frame)
 		assert vs_pos == int(vs.get(cv2.CAP_PROP_POS_FRAMES)), "Frame position is off"
 		if (proc_num == processes // 2) and (TD.frame_count == TD.jump_unit // 2):
@@ -76,7 +76,7 @@ if __name__ == "__main__":
 	ap.add_argument("-i", "--input", required=True, help="input video filepath")
 	ap.add_argument("-o", "--output", required=True, help="save output video filepath")
 	ap.add_argument("-w", "--width", type=int, default=None, help="resize video frame width")
-	ap.add_argument("-f", "--freq", type=int, default=5, help="frequency of detections")
+	ap.add_argument("-f", "--freq", type=int, default=5, help="detection frequency, default is every 5 frames")
 	args = vars(ap.parse_args())
 
 	resize_w = args["width"]
@@ -100,19 +100,17 @@ if __name__ == "__main__":
 		os.remove(out_vid)
 
 	frames = cviz.frame_cnt(in_vid)
-	processes = min(mp.cpu_count(), frames)
-	jump_unit = math.ceil(frames / processes)
-
-	if processes == 0:
-		sys.exit(f"No processors found")
 	if frames <= 0:
 		sys.exit(f"Error with video frames count")
-
+	processes = min(mp.cpu_count(), frames)
+	if processes == 0:
+		sys.exit(f"No processors found")
+	jump_unit = math.ceil(frames / processes)
 	print(f"Processing {frames} frames on {processes} processors... ")
 	multi_process_vid()
 
 	if os.path.isfile(out_vid):
-		if not cviz.frame_cnt(in_vid) == cviz.frame_cnt(out_vid):
+		if not frames == cviz.frame_cnt(out_vid):
 			print("Saved incorrectly, frame count off")
 		if not cviz.vid_fps(in_vid) == cviz.vid_fps(out_vid):
 			print("Saved incorrectly, fps is off")

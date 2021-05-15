@@ -18,13 +18,11 @@ import sys
 import os
 
 
-def read_video(vid_path, output, resize_w, freq):
+def read_video(vid_path, output, resize_w, freq, frames):
 	w, h = cviz.vid_dimz(vid_path, resize_w)
 	TD = Traffic_Detection(w, h, freq)
 	vs = Video_Thread(vid_path).start()
 	writer = cviz.vid_writer(output, w, h, vs.fps())
-	frames = vs.frames()
-	print(f"Processing {frames} frames... ")
 	while True:
 		frame = vs.read()
 		if frame is None:
@@ -70,12 +68,16 @@ if __name__ == '__main__':
 	if os.path.isfile(out_vid):
 		os.remove(out_vid)
 
-	read_video(in_vid, out_vid, resize_w, freq)
+	frames = cviz.frame_cnt(in_vid)
+	if frames <= 0:
+		sys.exit(f"Error with video frames count")
+	print(f"Processing {frames} frames... ")
+	read_video(in_vid, out_vid, resize_w, freq, frames)
 
 	if os.path.isfile(out_vid):
-		if not cviz.frame_cnt(in_vid) == cviz.frame_cnt(out_vid):
+		if not frames == cviz.frame_cnt(out_vid):
 			sys.exit("Saved incorrectly, frame count off")
-		if not cviz.frame_cnt(in_vid) == cviz.frame_cnt(out_vid):
+		if not cviz.vid_fps(in_vid) == cviz.vid_fps(out_vid):
 			sys.exit("Saved incorrectly, fps is off")
 	else:
 		sys.exit(f"Output video not saved")
