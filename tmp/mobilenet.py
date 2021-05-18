@@ -24,7 +24,7 @@ class Mnet:
 			"person" 	: (0, 0, 255),
 			"car" 		: (255, 0, 0),
 			"bus" 		: (225, 100, 0),
-			"motorbike" : (125, 255, 0),
+			"motorbike"	: (125, 255, 0),
 		}
 
 
