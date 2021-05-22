@@ -23,4 +23,10 @@
 - vid_outputs/
 	- Location to save output processed videos.
 
+- processing.py
+	- Take the split-up .mjpeg videos, recombine them, process with detectraffic, and compress.
+		- python3 processing.py -i vid_data -o vid_outputs/vid.avi
+- vid_data/
+	- Location of the .mjpeg video data from the vehicle mounted cameras.
+
 

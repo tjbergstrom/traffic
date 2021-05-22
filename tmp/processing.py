@@ -1,7 +1,7 @@
 # processing.py
 # May 2021
 #
-# python3 processing.py -i "../vid_data" -o "vid_data/vid.avi"
+# python3 processing.py -i vid_data -o vid_outputs/vid.avi
 #
 # We received a sample video split into seven smaller videos.
 # This will recombine them into the original full length video.
