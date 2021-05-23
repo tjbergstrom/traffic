@@ -32,9 +32,11 @@ def test_precheck():
 
 
 def test_bad_args():
+	if os.path.isfile(outvid()):
+		os.remove(outvid())
 	cmd = detectraffic_mp()
 	os.system(cmd)
-	assert 1 == 1
+	assert not os.path.isfile(outvid())
 
 
 def test_output_vid():
