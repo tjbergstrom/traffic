@@ -1,0 +1,9 @@
+opencv-python==4.2.0.32
+opencv-contrib-python==4.2.0.32
+torchvision==0.8.2
+torch==1.7.1
+dlib==19.19.0
+scipy==1.5.4
+numpy==1.19.4
+imutils==0.5.3
+vtk==8.1.2
