@@ -19,7 +19,7 @@ def invid():
 
 
 def outvid():
-	return "vid_outputs/0.avi"
+	return "vid_outputs/testvid.avi"
 
 
 def test_precheck():
