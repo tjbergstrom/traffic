@@ -10,6 +10,7 @@ from mobilenet import Mnet
 import numpy as np
 import dlib
 import cv2
+import random
 
 
 class Traffic_Detection:
@@ -96,7 +97,8 @@ class Traffic_Detection:
 				# Set up a new trackable object.
 				to = Trackable_Object(objectID, c)
 				to.label = label
-				to.color = self.MN.colors[to.label]
+				to.color = self.MN.colrs[random.randrange(0, len(self.MN.colrs))]
+				#to.color = self.MN.colors[to.label]
 			else:
 				# Or add the latest center coordinates to a tracked object.
 				to.centroids.append(c)
