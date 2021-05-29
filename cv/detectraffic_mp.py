@@ -46,7 +46,7 @@ def read_video_mp(proc_num):
 		if resize_w:
 			frame = cviz.resize(frame, width=w)
 		# Do the traffic detection stuff, draw on the frames, etc.
-		frame = TD.traffic_detections(frame)
+		frame = TD.traffic_detections(frame, obj_id=track)
 		TD.frame_count += 1
 		vs_pos += 1
 		if not first_block and TD.frame_count == 1:
@@ -87,11 +87,13 @@ if __name__ == "__main__":
 	ap.add_argument("-o", "--output", required=True, help="save output video filepath")
 	ap.add_argument("-w", "--width", type=int, default=None, help="resize video frame width")
 	ap.add_argument("-f", "--freq", type=int, default=5, help="detection frequency, default is every 5 frames")
+	ap.add_argument("-t", "--track", type=bool, default=False, help="single processed for true object tracking")
 	args = vars(ap.parse_args())
 
 	resize_w = args["width"]
 	out_vid = args["output"]
 	in_vid = args["input"]
+	track = args["track"]
 	freq = args["freq"]
 
 	if not os.path.isfile(in_vid):
@@ -117,6 +119,8 @@ if __name__ == "__main__":
 	processes = min(mp.cpu_count(), frames)
 	if processes == 0:
 		sys.exit(f"No processors found")
+	if track:
+		processes = 1
 	# Divide frames by processors, that's how many frames each block needs to process.
 	jump_unit = math.ceil(frames / processes)
 	print(f"Processing {frames} frames on {processes} processors... ")
