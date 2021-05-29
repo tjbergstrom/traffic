@@ -2,6 +2,9 @@
 # May 2021
 # Test that the traffic detection processing is all good.
 #
+# Process and save a sample video, should only take 10 seconds.
+# This is a quick way to make sure if you edited anything it still works.
+#
 # $ python3 -m pytest
 
 

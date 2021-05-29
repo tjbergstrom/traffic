@@ -2,7 +2,6 @@
 # May 2021
 #
 # python3 processing.py -i vid_data -o vid_outputs/vid.avi
-# python3 processing.py -i "../vid_data" -o "vid_data/vid.avi"
 #
 # We received a sample video split into seven smaller videos.
 # This will recombine them into the original full length video.
@@ -23,12 +22,12 @@ if __name__ == "__main__":
 	ap.add_argument("-o", "--outvid", required=True, help="recombined video filepath")
 	args = vars(ap.parse_args())
 
-	# indir should be just the directory where all the .mjpegs are
+	# indir should be just the directory where all the .mjpegs are.
 	indir = args["indir"]
-	# outvid should be the path/filename.avi you want to save as
+	# outvid should be the path/filename.avi you want to save as.
 	outvid = args["outvid"]
 
-	# Recombine all the .mjpegs into one temporary .mp4 (O(1) time, no processing)
+	# Recombine all the .mjpegs into one temporary .mp4 (O(1) time, no processing).
 	tmpvid, ext = os.path.splitext(outvid)
 	tmpvid = f"{tmpvid}.mp4"
 
@@ -50,18 +49,18 @@ if __name__ == "__main__":
 	sys.exit(0)
 	'''
 
-	# Run the traffic detection processing, which will save as .avi
+	# Run the traffic detection processing, which will save it as an avi video.
 	cmd = f"python3 detectraffic_mp.py -i {tmpvid} -o {outvid} -f 4"
 	os.system(cmd)
 
-	# Remove the temporary .mp4 used for recombining
+	# Remove the temporary .mp4 used for recombining.
 	os.remove(tmpvid)
 
 	vidpath, ext = os.path.splitext(outvid)
 
 	print("Compressing... ")
 
-	# Compress the finished processed .avi video into a much smaller .mp4
+	# Compress the finished processed avi video into a much smaller mp4 video.
 	cmd = f"ffmpeg -loglevel error -i {outvid} -vcodec h264 -acodec aac {vidpath}.mp4"
 	os.system(cmd)
 

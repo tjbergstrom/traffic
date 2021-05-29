@@ -1,6 +1,9 @@
 # mobilnet.py
 # November 2020
-# Some properties of MobileNet that are used to make detections
+#
+# Set up the MobileNet, read from a file location.
+# And set up the classes that it detects.
+# Specify the traffic related objects and set up colors for them.
 
 
 import cv2
@@ -28,6 +31,7 @@ class Mnet:
 			"bus" 		: (225, 100, 0),
 			"motorbike"	: (125, 255, 0),
 		}
+		self.colrs = [(0, 255, 0),(0, 0, 255),(255, 0, 0),(225, 100, 0),(125, 255, 0),]
 
 
 

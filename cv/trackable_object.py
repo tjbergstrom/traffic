@@ -1,6 +1,6 @@
 # trackable_object.py
 # December 2020
-# Storing the updated locations and other info for tracked objects
+# Storing the center coordinates locations and other info for tracked objects.
 
 
 class Trackable_Object:

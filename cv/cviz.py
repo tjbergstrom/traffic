@@ -1,6 +1,6 @@
 # cviz.py
 # May 2021
-# Some extra and general video processing utilities that don't really belong anywhere else.
+# Some video processing utilities that are nice to have.
 
 
 import os
@@ -8,6 +8,8 @@ import sys
 import cv2
 
 
+# Get the original height x width dimensions of a video.
+# Or get the new dimensions after resizing to a specified width.
 def vid_dimz(src, width=None):
 	cap = cv2.VideoCapture(src)
 	if width is None:
@@ -19,6 +21,7 @@ def vid_dimz(src, width=None):
 	return w, h
 
 
+# Resize a video frame to a new width, preserving the original aspect ratio.
 def resize(frame, width=None, height=None):
 	if width is None and height is None:
 	    return frame
@@ -46,6 +49,8 @@ def valid_vidtyp(in_vid):
 	return 0
 
 
+# Get the number of frames in a video.
+# If the video property fails, count the frames manually, O(n) time.
 def frame_cnt(src, manual=False):
 	cap = cv2.VideoCapture(src)
 	frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -60,6 +65,7 @@ def frame_cnt(src, manual=False):
 	return frames
 
 
+# fps = frames per second
 def vid_fps(src):
 	cap = cv2.VideoCapture(src)
 	fps = int(cap.get(cv2.CAP_PROP_FPS))
@@ -67,6 +73,9 @@ def vid_fps(src):
 	return fps
 
 
+# Set the index of the frame to be read next in a video stream,
+# Useful for setting the first frame for a block of frames.
+# If the video property fails, set it manually, O(n) time.
 def set_pos(vs, start_frame):
 	vs.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
 	while vs.get(cv2.CAP_PROP_POS_FRAMES) < start_frame:
@@ -76,6 +85,7 @@ def set_pos(vs, start_frame):
 	return vs
 
 
+# Convert a video to .avi, O(n) time.
 def avi_conv(src):
 	path, ext = os.path.splitext(src)
 	cap = cv2.VideoCapture(src)

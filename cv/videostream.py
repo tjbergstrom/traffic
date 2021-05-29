@@ -28,6 +28,7 @@ class Video_Thread:
 		return self
 
 
+	# Add frames to the Queue.
 	def update(self):
 		while True:
 			if self.quit:
@@ -43,6 +44,7 @@ class Video_Thread:
 		self.release()
 
 
+	# Read frames from the Queue, O(1) time.
 	def read(self):
 		if not self.more_frames():
 			return None

@@ -21,10 +21,13 @@ import multiprocessing as mp
 from detectrack import Traffic_Detection
 
 
+# Process a block of frames.
 def read_video_mp(proc_num):
+	# proc_num is which process this is, which determines which block of frames to read.
 	w, h = cviz.vid_dimz(in_vid, resize_w)
 	TD = Traffic_Detection(w, h, freq)
 	vs = cv2.VideoCapture(in_vid)
+	# Set the video stream to start reading from the first frame of this block of frames.
 	frame_block = jump_unit
 	start_frame = jump_unit * proc_num
 	first_block = (proc_num == 0)
@@ -33,19 +36,23 @@ def read_video_mp(proc_num):
 		frame_block += 1
 	vs_pos = start_frame
 	vs = cviz.set_pos(vs, start_frame)
+	# Saving the block of frames as a temporary video.
 	writer = cviz.vid_writer(f"mpt/tmp_{proc_num}.avi", w, h, cviz.vid_fps(in_vid))
+	# Read all of the video frames in this block.
 	while TD.frame_count < frame_block:
 		check, frame = vs.read()
 		if not check or frame is None:
 		    break
 		if resize_w:
 			frame = cviz.resize(frame, width=w)
+		# Do the traffic detection stuff, draw on the frames, etc.
 		frame = TD.traffic_detections(frame)
 		TD.frame_count += 1
 		vs_pos += 1
 		if not first_block and TD.frame_count == 1:
 			continue
 		cv2.putText(frame, f"{vs_pos-1}", (10,25), 0, 0.35, (20,255,10), 1)
+		# Save the output processed frame.
 		writer.write(frame)
 		assert vs_pos == int(vs.get(cv2.CAP_PROP_POS_FRAMES)), "Frame position is off"
 		if (proc_num == processes // 2) and (TD.frame_count == frame_block // 2):
@@ -57,10 +64,12 @@ def read_video_mp(proc_num):
 def multi_process_vid():
 	os.system("rm -f -r mpt")
 	os.system("mkdir -p mpt")
-	# Multi-process the blocks of frames
+	# Multi-process the blocks of frames (saving them as temporary videos).
+	# read_video_mp is the multi-processed function.
+	# The process number is the only argument that can be passed to it.
 	p = mp.Pool(processes)
 	p.map(read_video_mp, range(processes))
-	# Recombine the blocks of frames
+	# Recombine the blocks of frames (the temporary videos) into the finished video.
 	tmp_files = [f"mpt/tmp_{i}.avi" for i in range(processes)]
 	with open("tmps.txt", "w") as f:
 		for i in tmp_files:
@@ -100,12 +109,15 @@ if __name__ == "__main__":
 	if os.path.isfile(out_vid):
 		os.remove(out_vid)
 
+	# How many frames are in this video.
 	frames = cviz.frame_cnt(in_vid)
 	if frames <= 0:
 		sys.exit(f"Error with video frames count")
+	# How many processors are on this machine.
 	processes = min(mp.cpu_count(), frames)
 	if processes == 0:
 		sys.exit(f"No processors found")
+	# Divide frames by processors, that's how many frames each block needs to process.
 	jump_unit = math.ceil(frames / processes)
 	print(f"Processing {frames} frames on {processes} processors... ")
 	multi_process_vid()
