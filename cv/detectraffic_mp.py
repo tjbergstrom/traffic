@@ -116,9 +116,13 @@ if __name__ == "__main__":
 	if frames <= 0:
 		sys.exit(f"Error with video frames count")
 	# How many processors are on this machine.
-	processes = min(mp.cpu_count(), frames)
+	processes = mp.cpu_count()
 	if processes == 0:
 		sys.exit(f"No processors found")
+	# If it's a short video and you have a lot of processors, just set it to 4 processes
+	if processes >= frames:
+		processes = 4
+	# To enable true object tracking, one process will make all frames read contiguously
 	if track:
 		processes = 1
 	# Divide frames by processors, that's how many frames each block needs to process.
