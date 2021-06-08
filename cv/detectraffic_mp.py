@@ -37,8 +37,7 @@ def read_video_mp(proc_num):
 	vs_pos = start_frame
 	vs = cviz.set_pos(vs, start_frame)
 	# Saving the block of frames as a temporary video.
-	vid = f"mpt/tmp_{proc_num}.avi"
-	writer = cviz.vid_writer(vid, w, h, cviz.vid_fps(in_vid))
+	writer = cviz.vid_writer(f"mpt/tmp_{proc_num}.avi", w, h, cviz.vid_fps(in_vid))
 	# Read all of the video frames in this block.
 	while TD.frame_count < frame_block:
 		check, frame = vs.read()
@@ -60,11 +59,6 @@ def read_video_mp(proc_num):
 			print(f"50% complete")
 	vs.release()
 	writer.release()
-	#vidpath, ext = os.path.splitext(vid)
-	#cmd = f"ffmpeg -loglevel error -i {vid} -vcodec h264 -acodec aac {vidpath}.mp4"
-	#os.system(cmd)
-	#cviz.avi_conv(f"{vidpath}.mp4")
-	#os.remove(f"{vidpath}.mp4")
 
 
 def multi_process_vid():
@@ -143,13 +137,8 @@ if __name__ == "__main__":
 			print("Saved incorrectly, fps is off")
 	else:
 		sys.exit(f"Output video not saved")
-
-	#print("Compressing... ")
-	#vidpath, ext = os.path.splitext(out_vid)
-	#cmd = f"ffmpeg -loglevel error -i {out_vid} -vcodec h264 -acodec aac {vidpath}.mp4"
-	#os.system(cmd)
-	#os.remove(out_vid)
 	print(f"Finished processing video ({time.time()-start:.2f} seconds)")
+
 
 
 ##
