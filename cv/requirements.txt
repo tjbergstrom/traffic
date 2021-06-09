@@ -7,3 +7,4 @@ scipy==1.5.4
 numpy==1.19.4
 imutils==0.5.3
 vtk==8.1.2
+pytest==6.1.2

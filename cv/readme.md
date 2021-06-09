@@ -19,14 +19,8 @@
 - detectors/
 	- Location of MobileNet.
 - vid_inputs/
-	- Location of input videos you want to process.
+	- Location of input videos (from the vehicle mounted camera) that you want to process.
 - vid_outputs/
 	- Location to save output processed videos.
-
-- processing.py
-	- Take the split-up .mjpeg videos, recombine them, process with detectraffic, and compress.
-		- python3 processing.py -i vid_data -o vid_outputs/vid.avi
-- vid_data/
-	- Location of the .mjpeg video data from the vehicle mounted cameras.
 
 
