@@ -22,5 +22,6 @@
 	- Location of input videos (from the vehicle mounted camera) that you want to process.
 - vid_outputs/
 	- Location to save output processed videos.
-
+- test_td.py
+	- Run the traffic detection system on a short video and check for success.
 

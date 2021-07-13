@@ -42,7 +42,7 @@ def vid_writer(output, w, h, fps):
 
 
 def valid_vidtyp(in_vid):
-	exts = set(['.avi', '.mp4', '.mjpeg',])
+	exts = set(['.avi', '.mp4', '.mjpeg', '.h264',])
 	ext = os.path.splitext(os.path.basename(in_vid))[1]
 	if ext in exts:
 		return 1
@@ -70,6 +70,8 @@ def vid_fps(src):
 	cap = cv2.VideoCapture(src)
 	fps = int(cap.get(cv2.CAP_PROP_FPS))
 	cap.release()
+	if fps > 50:
+		return 20
 	return fps
 
 
